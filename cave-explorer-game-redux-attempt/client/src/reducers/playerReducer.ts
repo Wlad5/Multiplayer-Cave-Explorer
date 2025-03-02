@@ -38,14 +38,15 @@ export const playerReducer = (state = initialState, action: PlayerActions) => {
             }
             return {
                 ...state,
-                direction: newDirection
+                direction: newDirection,
+                status: 'idle'
             };
         }
         case MOVE_PLAYER: {
             let newX = state.x;
             let newY = state.y;
-            const { grid } = action.payload as MovePlayerPayload; 
-            
+            const { grid } = action.payload as MovePlayerPayload;
+        
             switch (state.direction) {
                 case PlayerDirection.NORTH:
                     newX--;
@@ -61,36 +62,38 @@ export const playerReducer = (state = initialState, action: PlayerActions) => {
                     break;
             }
         
-            // Check for out of bounds
             if (newX < 0 || newX >= GRID_SIZE || newY < 0 || newY >= GRID_SIZE) {
                 return {
                     ...state,
-                    status: 'outOfBounds'
-                };
-            }
-        
-            // Check for obstacle
-            if (grid[newX][newY] === OBSTACLE) {
-                return {
-                    ...state,
-                    status: 'hitObstacle'
+                    status: 'outOfBounds',
+                    x: state.x,
+                    y: state.y,
                 };
             }
         
             const cellContent = grid[newX][newY];
+            if (cellContent === OBSTACLE) {
+                return {
+                    ...state,
+                    status: 'hitObstacle',
+                    x: state.x,
+                    y: state.y,
+                };
+            }
+        
             if (cellContent === TRAP) {
                 return {
                     ...state,
                     x: newX,
                     y: newY,
-                    status: 'hitTrap'
+                    status: 'hitTrap',
                 };
             } else if (cellContent === TREASURE) {
                 return {
                     ...state,
                     x: newX,
                     y: newY,
-                    status: 'foundTreasure'
+                    status: 'foundTreasure',
                 };
             }
         

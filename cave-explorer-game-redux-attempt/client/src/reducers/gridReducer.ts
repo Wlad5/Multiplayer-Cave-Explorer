@@ -78,18 +78,21 @@ export const gridReducer = (state = initialState, action: GridActions) => {
         case REVEAL_CURRENT_CELL: {
             const {playerX, playerY, playerDirection} = action.payload as RevealCurrentCellPayload;
             const newGrid = state.grid.map(row => [...row]);
+            const newHiddenGrid = state.hiddenGrid.map(row => [...row]);
             newGrid[playerX][playerY] = playerDirection;
+            newHiddenGrid[playerX][playerY] = playerDirection;
             return {
                 ...state,
                 grid: newGrid,
-                hiddenGrid: newGrid
+                hiddenGrid: newHiddenGrid
             }
         }
         case REVEAL_LINE_OF_SIGHT: {
             const {playerX, playerY, playerDirection} = action.payload as RevealLineOfSightPayload;
             let nextX = playerX;
             let nextY = playerY;
-            const newHiddenGrid = [...state.hiddenGrid.map(row => [...row])]
+            const newGrid = [...state.grid.map(row => [...row])];
+            const newHiddenGrid = [...state.hiddenGrid.map(row => [...row])];
             while (true) {
                 switch (playerDirection) {
                     case PlayerDirection.NORTH:
@@ -106,15 +109,19 @@ export const gridReducer = (state = initialState, action: GridActions) => {
                         break;
                 }
                 if (nextX < 0 || nextX >= GRID_SIZE || nextY < 0 || nextY >= GRID_SIZE) {
-                    break;
-                }
-                if (state.grid[nextX][nextY] === OBSTACLE) {
-                    break;
+                    break
                 }
                 newHiddenGrid[nextX][nextY] = state.grid[nextX][nextY];
+                if (state.grid[nextX][nextY] === OBSTACLE) {
+                    break
+                }
+                
             }
+            newGrid[playerX][playerY] = playerDirection;
+            newHiddenGrid[playerX][playerY] = playerDirection;
             return {
                 ...state,
+                grid: newGrid,
                 hiddenGrid: newHiddenGrid
             }
         }

@@ -6,13 +6,12 @@ interface GameBoardProps {
   exit: () => void;
 }
 
-
 export const GameBoard: React.FC<GameBoardProps> = ({ exit }) => {
-  const grid = useSelector((state: RootState) => state.grid.grid)
+  const grid = useSelector((state: RootState) => state.grid.grid);
   const hiddenGrid = useSelector((state: RootState) => state.grid.hiddenGrid);
 
   const renderGrid = () => {
-    return grid.map((row, rowIndex) => (
+    return hiddenGrid.map((row, rowIndex) => (
       <div key={rowIndex} className="row">
         {row.map((cell, cellIndex) => {
           const cellClass = cell === "^" || cell === ">" || cell === "v" || cell === "<" ? `${styles.player} cell` : "cell";
