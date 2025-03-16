@@ -15,20 +15,24 @@ export interface PlaceRandomItemsPayload {
     count: number;
 }
 export interface RevealCurrentCellPayload {
-    playerX: number;
-    playerY: number;
-    playerDirection: string;
+    player: {
+        playerId: number;
+        x: number;
+        y: number;
+        direction: string;
+    }
+
 }
 export interface RevealLineOfSightPayload {
-    playerX: number;
-    playerY: number;
-    playerDirection: string;
+    player: {
+        playerId: number;
+        x: number;
+        y: number;
+        direction: string;
+    }
 }
 export interface ClearCellPayload {
-    cellPositionX: number;
-    cellPositionY: number;
-}
-export interface CheckCellStatusPayload {
+    playerId: number;
     cellPositionX: number;
     cellPositionY: number;
 }
@@ -48,25 +52,22 @@ export const placeRandomItemsAC = (item: string, count: number) => ({
         count
     }
 })
-export const revealCurrentCellAC = (playerX: number, playerY: number, playerDirection: string) => ({
+export const revealCurrentCellAC = (player: {playerId: number, x: number, y: number, direction: string}) => ({
     type: REVEAL_CURRENT_CELL,
     payload: {
-        playerX,
-        playerY,
-        playerDirection
+        player
     }
 })
-export const revealLineOfSightAC = (playerX: number, playerY: number, playerDirection: string) => ({
+export const revealLineOfSightAC = (player: {playerId: number, x: number, y: number, direction: string}) => ({
     type: REVEAL_LINE_OF_SIGHT,
     payload: {
-        playerX,
-        playerY,
-        playerDirection
+        player
     }
 })
-export const clearCellAC = (cellPositionX: number, cellPositionY: number) => ({
+export const clearCellAC = (playerId: number, cellPositionX: number, cellPositionY: number) => ({
     type: CLEAR_CELL,
     payload: {
+        playerId,
         cellPositionX,
         cellPositionY
     }

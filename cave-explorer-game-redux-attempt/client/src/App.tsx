@@ -1,54 +1,75 @@
 import { useDispatch, useSelector} from "react-redux";
 import { Controls } from "./components/control/Controls";
-import { Message } from "./components/message/Message";
 import { StartScreen } from "./components/startScreen/StartScreen";
 import GameBoard from "./components/gameBoard/GameBoard";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { clearCellAC, placeRandomItemsAC, revealCurrentCellAC, revealLineOfSightAC } from "./reducers/gridActions";
 import { OBSTACLE, TRAP, TREASURE } from "../../server/game/constants";
-import { movePlayerAC, turnPlayerAC } from "./reducers/playerActions";
+import { movePlayerAC, turnPlayerAC, updateScoreAC } from "./reducers/playerActions";
 import { RootState } from "./store";
+import { nextTurnAC, showMessageAC} from "./reducers/gameActions";
+import { Message } from "./components/message/Message";
 
 function App() {
   const dispatch = useDispatch();
-
-  const [message, setMessage]     = useState("");
   const [username, setUsername]   = useState("");
   const [startGame, setStartGame] = useState(false);
+  const players                   = useSelector((state: RootState) => state.player) || [];
   const grid                      = useSelector((state: RootState) => state.grid.grid);
-  const playerX                   = useSelector((state: RootState) => state.player.x);
-  const playerY                   = useSelector((state: RootState) => state.player.y);
-  const playerDirection           = useSelector((state: RootState) => state.player.direction);
-  const playerStatus              = useSelector((state: RootState) => state.player.status);
-  const handleMove = (move: string) => {
-    const previousX = playerX;
-    const previousY = playerY;
+  const currentPlayer             = useSelector((state: RootState) => state.game.currentPlayer);
+  const previousPlayerStatus      = useRef(players.map(player => player.status));
+  
+  const handleMove = (playerId: number, move: string) => {
+    if (playerId !== currentPlayer) return;
+    const player = players.find(player => player.playerId === playerId);
+    if (!player) return;
+    const previousX = player.x;
+    const previousY = player.y;
     if (move === 'R') {
-      dispatch(turnPlayerAC(false));
+      dispatch(turnPlayerAC(playerId,false));
     }
     if (move === 'L') {
-      dispatch(turnPlayerAC(true));
+      dispatch(turnPlayerAC(playerId,true));
     }
     if (move === 'F') {
-      dispatch(movePlayerAC(grid));
-      dispatch(revealLineOfSightAC(playerX, playerY, playerDirection));
-      if (playerStatus === 'hitObstacle' || playerStatus === 'outOfBounds') {
+      dispatch(movePlayerAC(playerId,grid));
+      dispatch(revealLineOfSightAC(player));
+      if (player.status === 'hitObstacle' || player.status === 'outOfBounds') {
         return;
       } else {
-        dispatch(clearCellAC(previousX, previousY));
+        dispatch(clearCellAC(player.playerId, previousX, previousY));
       }
-
+      dispatch(nextTurnAC(players.length));
     }
-  
-    setMessage(`Moved ${move}`);
+    dispatch(showMessageAC(""));
   };
+
+  useEffect(() => {
+    players.forEach((player, index) => {
+      if (player.status !== previousPlayerStatus.current[index]) {
+        if (player.status === 'hitObstacle') {
+          dispatch(showMessageAC("You hit an obstacle"));
+        } else if (player.status === 'outOfBounds') {
+          dispatch(showMessageAC("You cannot go out of bounds"));
+        } else if (player.status === 'foundTreasure') {
+          dispatch(updateScoreAC(player.playerId, 5));
+          dispatch(showMessageAC("You found the treasure!"));
+        } else if (player.status === 'hitTrap') {
+          dispatch(updateScoreAC(player.playerId, -10));
+          dispatch(showMessageAC("You hit a trap"));
+        } else {
+          dispatch(showMessageAC(''));
+        }
+      }
+    });
+    previousPlayerStatus.current = players.map(player => player.status);
+  }, [players]);
   
   const exit = () => {
     setStartGame(false);
   };
   
   const play = () => {
-    setMessage("");
     setStartGame(true);
   };
   
@@ -59,9 +80,11 @@ function App() {
   }, []);
   
   useEffect(() => {
-    dispatch(revealCurrentCellAC(playerX, playerY, playerDirection));
-    console.log(`Player moved to: (${playerX}, ${playerY}) - Status: ${playerStatus}`);
-  }, [playerStatus, playerX, playerY, playerDirection]);
+    players.forEach(player => {
+      dispatch(revealCurrentCellAC({playerId: player.playerId, x: player.x, y: player.y, direction: player.direction}));
+      console.log(`Player ${player.playerId} moved to: (${player.x}, ${player.y}) - Status: ${player.status}`);
+    })
+  }, [players]);
   
   return (
     <div className="app">
@@ -69,9 +92,20 @@ function App() {
         <StartScreen play={play} username={username} setUsername={setUsername} />
       ) : (
         <div>
-          <GameBoard exit={exit} />
-          <Controls onMove={handleMove} onExit={exit} />
-          <Message message={message} />
+          <GameBoard exit={exit} />          
+          {
+            players.map(player => (
+              <div key={player.playerId}>
+                <Controls
+                  playerId={player.playerId}
+                  onMove={handleMove}
+                  onExit={exit}
+                />
+                <Message message={player.status}/>
+                <div>Score: {player.score}</div>
+              </div>
+            ))
+          }
         </div>
       )}
     </div>

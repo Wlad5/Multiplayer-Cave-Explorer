@@ -1,13 +1,14 @@
 import { useEffect } from "react"
 
 interface ControlsProps {
-    onMove: (move:string) => void
+    playerId: number
+    onMove: (playerId: number, move:string) => void
     onExit: () => void
 }
 
-export const Controls: React.FC<ControlsProps> = ({onMove, onExit}) => {
+export const Controls: React.FC<ControlsProps> = ({playerId,onMove, onExit}) => {
     const handleMove = (move: string) => {
-        onMove(move)
+        onMove(playerId, move);
     }
 
     useEffect(() => {
