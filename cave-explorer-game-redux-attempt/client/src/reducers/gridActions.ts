@@ -1,3 +1,7 @@
+import { Dispatch } from "redux"
+import { AppThunk, RootState } from "../store"
+import { EMPTY_CELL, GRID_SIZE} from "../../../server/game/constants"
+
 export const INITIALIZE_GRID        = 'INITIALIZE_GRID'
 export const PLACE_RANDOM_ITEMS     = 'PLACE_RANDOM_ITEMS'
 export const REVEAL_CURRENT_CELL    = 'REVEAL_CURRENT_CELL'
@@ -12,7 +16,7 @@ export interface InitializeGridPayload {
 }
 export interface PlaceRandomItemsPayload {
     item: string;
-    count: number;
+    positions: {x: number, y: number}[]
 }
 export interface RevealCurrentCellPayload {
     player: {
@@ -45,11 +49,11 @@ export const initializeGridAC = (gridSize: number, initialGrid: string[][], init
         hiddenGrid: initialHiddenGrid
     }
 })
-export const placeRandomItemsAC = (item: string, count: number) => ({
+export const placeRandomItemsAC = (item: string,positions: {x: number, y: number}[]) => ({
     type: PLACE_RANDOM_ITEMS,
     payload: {
         item,
-        count
+        positions
     }
 })
 export const revealCurrentCellAC = (player: {playerId: number, x: number, y: number, direction: string}) => ({
@@ -72,6 +76,23 @@ export const clearCellAC = (playerId: number, cellPositionX: number, cellPositio
         cellPositionY
     }
 })
+export const placeRandomItemsTC = (item: string, count: number): AppThunk => (dispatch: Dispatch<GridActions>, getState: () => RootState) => {
+    const grid = getState().grid.grid;
+    const placedPositions = []
+    let placed = 0;
+    let attempts = 0;
+    while (placed < count && attempts < 100) {
+        const x = Math.floor(Math.random() * GRID_SIZE);
+        const y = Math.floor(Math.random() * GRID_SIZE);
+        if (grid[x][y] === EMPTY_CELL) {
+            grid[x][y] = item;
+            placedPositions.push({x, y})
+            placed++;
+        }
+        attempts++;
+    }
+    dispatch(placeRandomItemsAC(item, placedPositions))
+}
 
 export type InitializeGrid      = ReturnType<typeof initializeGridAC>
 export type PlaceRandomItems    = ReturnType<typeof placeRandomItemsAC>

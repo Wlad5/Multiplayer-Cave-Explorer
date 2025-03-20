@@ -25,8 +25,8 @@ export interface GridState {
     grid:       string[][];
     hiddenGrid: string[][];
     players:    {playerId: number; x: number; y: number; direction: PlayerDirection}[];
-    obstacles:  {x: number; y: number}[];
     traps:      {x: number; y: number}[];
+    obstacles:  {x: number; y: number}[];
     treasures:  {x: number; y: number}[];
 }
 
@@ -34,8 +34,8 @@ const initialState: GridState = {
     grid:       Array.from({length: GRID_SIZE}, () => Array(GRID_SIZE).fill(EMPTY_CELL)),
     hiddenGrid: Array.from({length: GRID_SIZE}, () => Array(GRID_SIZE).fill(HIDDEN_CELL)),
     players:    [],
-    obstacles:  [],
     traps:      [],
+    obstacles:  [],
     treasures:  [],
 };
 
@@ -50,24 +50,19 @@ export const gridReducer = (state: GridState = initialState, action: GridActions
             };
         }
         case PLACE_RANDOM_ITEMS: {
-            const {item, count} = action.payload as PlaceRandomItemsPayload;
-            let placed = 0;
-            let attempts = 0;
-            const newGrid = state.grid.map(row => [...row]);
-            const newTraps = [...state.traps];
-            const newTreasures = [...state.treasures];
-            const newObstacles = [...state.obstacles];
-            while (placed < count && attempts < 100) {
-                const x = Math.floor(Math.random() * GRID_SIZE);
-                const y = Math.floor(Math.random() * GRID_SIZE);
+            const {item, positions} = action.payload as PlaceRandomItemsPayload;
+            const newGrid           = state.grid.map(row => [...row]);
+            const newTraps          = [...state.traps];
+            const newTreasures      = [...state.treasures];
+            const newObstacles      = [...state.obstacles];
+
+            for (const {x, y} of positions) {
                 if (newGrid[x][y] === EMPTY_CELL) {
                     newGrid[x][y] = item;
-                    if (item === TRAP) newTraps.push({x, y});
-                    if (item === TREASURE) newTreasures.push({x, y});
-                    if (item === OBSTACLE) newObstacles.push({x, y});
-                    placed++;
+                    if (item === TRAP)      newTraps.push({x, y});
+                    if (item === TREASURE)  newTreasures.push({x, y});
+                    if (item === OBSTACLE)  newObstacles.push({x, y});
                 }
-                attempts++;
             }
             return {
                 ...state,

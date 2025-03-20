@@ -3,7 +3,7 @@ import { Controls } from "./components/control/Controls";
 import { StartScreen } from "./components/startScreen/StartScreen";
 import GameBoard from "./components/gameBoard/GameBoard";
 import { useEffect, useRef, useState } from "react";
-import { clearCellAC, placeRandomItemsAC, revealCurrentCellAC, revealLineOfSightAC } from "./reducers/gridActions";
+import { clearCellAC, placeRandomItemsTC, revealCurrentCellAC, revealLineOfSightAC } from "./reducers/gridActions";
 import { OBSTACLE, TRAP, TREASURE } from "../../server/game/constants";
 import { movePlayerAC, turnPlayerAC, updateScoreAC } from "./reducers/playerActions";
 import { AppDispatch, RootState } from "./store";
@@ -73,9 +73,9 @@ function App() {
   }, [currentPlayer, dispatch, gameStatus]);
   
   useEffect(() => {
-    dispatch(placeRandomItemsAC(TRAP, 10));
-    dispatch(placeRandomItemsAC(TREASURE, 5));
-    dispatch(placeRandomItemsAC(OBSTACLE, 15));
+    dispatch(placeRandomItemsTC(TRAP, 10));
+    dispatch(placeRandomItemsTC(TREASURE, 40));
+    dispatch(placeRandomItemsTC(OBSTACLE, 10));
   }, [dispatch]);
 
   useEffect(() => {

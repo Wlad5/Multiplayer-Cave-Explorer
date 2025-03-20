@@ -35,47 +35,6 @@ const initialState: PlayerState[] = [
         score: 0,
         status: 'idle'
     },
-    {
-        playerId: 3,
-        x: 8,
-        y: 8,
-        direction: PlayerDirection.EAST,
-        score: 0,
-        status: 'idle'
-    },
-    {
-        playerId: 4,
-        x: 5,
-        y: 6,
-        direction: PlayerDirection.NORTH,
-        score: 0,
-        status: 'idle'
-    },
-    {
-        playerId: 5,
-        x: 4,
-        y: 5,
-        direction: PlayerDirection.SOUTH,
-        score: 0,
-        status: 'idle'
-    },
-    {
-        playerId: 6,
-        x: 5,
-        y: 3,
-        direction: PlayerDirection.SOUTH,
-        score: 0,
-        status: 'idle'
-    },
-    {
-        playerId: 7,
-        x: 6,
-        y: 5,
-        direction: PlayerDirection.EAST,
-        score: 0,
-        status: 'idle'
-    }
-
 ]
 
 export const playerReducer = (state: PlayerState[] = initialState, action: PlayerActions): PlayerState[] => {
