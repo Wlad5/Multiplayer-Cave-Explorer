@@ -1,9 +1,10 @@
 import { useEffect } from "react"
 
 interface ControlsProps {
-    playerId: number
-    onMove: (playerId: number, move:string) => void
-    onExit: () => void
+    playerId: number;
+    onMove: (playerId: number, move:string) => void;
+    onExit: () => void;
+    disabled: boolean;
 }
 
 export const Controls: React.FC<ControlsProps> = ({playerId,onMove, onExit}) => {
