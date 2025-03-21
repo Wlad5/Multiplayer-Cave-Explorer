@@ -1,4 +1,4 @@
-import { GameActions, START_GAME, EXIT_GAME, END_GAME, SHOW_MESSAGE, ShowMessagePayload, NEXT_TURN, NextTurnPayload, SET_GAME_TIMER, SetGameTimerPayload, SET_TURN_TIMER, SetTurnTimerPayload, SET_MOVE_MADE, SetMoveMadePayload } from "./gameActions";
+import { GameActions, START_GAME, EXIT_GAME, END_GAME, SHOW_MESSAGE, ShowMessagePayload, NEXT_TURN, NextTurnPayload, SET_GAME_TIMER, SetGameTimerPayload, SET_TURN_TIMER, SetTurnTimerPayload, SET_MOVE_MADE, SetMoveMadePayload, EndGamePayload } from "./gameActions";
 
 export interface GameState {
     score: number;
@@ -10,6 +10,7 @@ export interface GameState {
     message?: string;
     currentPlayer: number;
     playerMoved: boolean;
+    leaderBoard: {playerId: number, score: number}[] | [];
 }
 
 export const initialState: GameState = {
@@ -21,7 +22,8 @@ export const initialState: GameState = {
     turnTimeLeft: 10000,
     message: '',
     currentPlayer: 0,
-    playerMoved: false
+    playerMoved: false,
+    leaderBoard: [],
 }
 
 export const gameReducer = (state: GameState = initialState, action: GameActions): GameState => {
@@ -46,18 +48,25 @@ export const gameReducer = (state: GameState = initialState, action: GameActions
             }
         }
         case END_GAME:
-            if (state.gameTimer && state.turnTimer) {
-                clearInterval(state.gameTimer);
-                clearInterval(state.turnTimer);
-            }
-            return {
-                ...state,
-                gameStatus: 'ended',
-                gameTimer: null,
-                turnTimer: null,
-                gameTimeLeft: 0,
-                turnTimeLeft: 0
-        }
+    if (state.gameTimer && state.turnTimer) {
+        clearInterval(state.gameTimer);
+        clearInterval(state.turnTimer);
+    }
+    if ('payload' in action) {
+        const { playersScores } = action.payload as EndGamePayload;
+        const sortedPlayerScores = playersScores.sort((a, b) => b.score - a.score);
+        console.log(playersScores)
+        return {
+            ...state,
+            gameStatus: 'ended',
+            gameTimer: null,
+            turnTimer: null,
+            gameTimeLeft: 0,
+            turnTimeLeft: 0,
+            leaderBoard: sortedPlayerScores
+        };
+    }
+    return state;
         case SHOW_MESSAGE: {
             if ('payload' in action) {
                 const {message} = action.payload as ShowMessagePayload;

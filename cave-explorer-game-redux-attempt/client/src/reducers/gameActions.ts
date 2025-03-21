@@ -32,6 +32,10 @@ export interface SetMoveMadePayload {
     moveMade: boolean;
 }
 
+export interface EndGamePayload {
+    playersScores: {playerId: number, score: number}[];
+}
+
 export const startGameAC = () => ({
     type: START_GAME
 })
@@ -40,8 +44,11 @@ export const exitGameAC = () => ({
     type: EXIT_GAME
 })
 
-export const endGameAC = () => ({
-    type: END_GAME
+export const endGameAC = (playersScores: {playerId: number, score: number}[]) => ({
+    type: END_GAME,
+    payload: {
+        playersScores
+    }
 })
 
 export const showMessageAC = (message: string) => ({
@@ -84,6 +91,7 @@ export const setMoveMadeAC = (moveMade: boolean) => ({
 export const gameTimerTC = (): AppThunk => (dispatch: Dispatch<GameActions>, getState: () => RootState) => {
     dispatch(startGameAC());
     const existingTimer = getState().game.gameTimer;
+    const players       = getState().player;
     let timeLeft        = getState().game.gameTimeLeft;
     if (existingTimer) clearInterval(existingTimer);
     const timerId = window.setInterval(() => {
@@ -92,7 +100,10 @@ export const gameTimerTC = (): AppThunk => (dispatch: Dispatch<GameActions>, get
         dispatch(setGameTimerAC(timerId, timeLeft));
         if (timeLeft <= 0) {
             clearInterval(timerId);
-            dispatch(endGameAC());
+            const playersScore = players.map((player) => {
+                return {playerId: player.playerId, score:player.score}
+            })
+            dispatch(endGameAC(playersScore));
         }
     }, 1000);
 };
@@ -114,7 +125,10 @@ export const turnTimerTC = (): AppThunk => (dispatch: Dispatch<GameActions>, get
     const turnTimerId = window.setInterval(() => {
         if (gameTimeLeft <= turnTimeLeft || gameTimeLeft <= 0) {
             clearInterval(turnTimerId);
-            dispatch(endGameAC());
+            const playersScore = players.map((player) => {
+                return {playerId: player.playerId, score:player.score}
+            })
+            dispatch(endGameAC(playersScore));
             return;
         }
         turnTimeLeft -= 1000;

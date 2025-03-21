@@ -7,22 +7,23 @@ import { clearCellAC, placeRandomItemsTC, revealCurrentCellAC, revealLineOfSight
 import { OBSTACLE, TRAP, TREASURE } from "../../server/game/constants";
 import { movePlayerAC, turnPlayerAC, updateScoreAC } from "./reducers/playerActions";
 import { AppDispatch, RootState } from "./store";
-import { endGameAC, gameTimerTC, nextTurnAC, setMoveMadeAC, showMessageAC, startGameAC, turnTimerTC} from "./reducers/gameActions";
+import { exitGameAC, gameTimerTC, nextTurnAC, setMoveMadeAC, showMessageAC, startGameAC, turnTimerTC} from "./reducers/gameActions";
 import { Message } from "./components/message/Message";
 
 function App() {
   const dispatch: AppDispatch     = useDispatch();
   const [username, setUsername]   = useState("");
-  const gameStatus                = useSelector((state: RootState) => state.game.gameStatus);
-  const existingGameTimer         = useSelector((state: RootState) => state.game.gameTimer);
-  const playerMoved               = useSelector((state: RootState) => state.game.playerMoved);
-  const players                   = useSelector((state: RootState) => state.player);
   const grid                      = useSelector((state: RootState) => state.grid.grid);
-  const currentPlayer             = useSelector((state: RootState) => state.game.currentPlayer);
+  const players                   = useSelector((state: RootState) => state.player);
   const gameTime                  = useSelector((state: RootState) => state.game.gameTimeLeft);
   const turnTime                  = useSelector((state: RootState) => state.game.turnTimeLeft);
+  const gameStatus                = useSelector((state: RootState) => state.game.gameStatus);
+  const playerMoved               = useSelector((state: RootState) => state.game.playerMoved);
+  const leaderBoard               = useSelector((state: RootState) => state.game.leaderBoard);
   const playersCount              = players.length;
   const turnTimerRef              = useRef<number | null>(null);
+  const currentPlayer             = useSelector((state: RootState) => state.game.currentPlayer);
+  const existingGameTimer         = useSelector((state: RootState) => state.game.gameTimer);
   const previousPlayerStatus      = useRef(players.map(player => player.status));
 
   const handleMove = (playerId: number, move: string) => {
@@ -56,7 +57,7 @@ function App() {
   };
   
   const exit = () => {
-    dispatch(endGameAC())
+    dispatch(exitGameAC());
   };
   
   useEffect(() => {
@@ -136,7 +137,22 @@ function App() {
           <div className="game-info">
             <h2>Game Time: {Math.floor(gameTime / 1000)}s</h2>
             <h2>Turn Time: {Math.floor(turnTime / 1000)}s</h2>
-          </div>         
+          </div>
+          
+          {/* Show leaderboard if the game has ended */}
+          {gameStatus === 'ended' && leaderBoard.length > 0 && (
+            <div className="leaderboard">
+              <h3>Game Over! Final Leaderboard:</h3>
+              <ul>
+                {leaderBoard.map((player, index) => (
+                  <li key={index}>
+                    {`Player ${player.playerId}: ${player.score} points`}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          
           {
             players.map(player => (
               <div key={player.playerId}>
