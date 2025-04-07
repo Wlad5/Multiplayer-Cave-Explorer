@@ -1,12 +1,12 @@
-import { EMPTY_CELL, GRID_SIZE, HIDDEN_CELL, OBSTACLE, PlayerDirection, TRAP, TREASURE } from "./constants";
+import { GRID_SIZE, EMPTY_CELL, HIDDEN_CELL, OBSTACLE, TRAP, TREASURE, PlayerDirection } from "./constants";
 
 export class Grid {
-    public grid: string[][] = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(EMPTY_CELL));
-    public hiddenGrid: string[][] = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(HIDDEN_CELL));
+    private grid        : string[][] = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(EMPTY_CELL));
+    private hiddenGrid  : string[][] = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(HIDDEN_CELL));
 
     public placeRandomItems(item: string, count: number): void {
-        let placed = 0;
-        let attempts = 0;
+        let placed      = 0;
+        let attempts    = 0;
         while (placed < count && attempts < 100) {
             const x = Math.floor(Math.random() * GRID_SIZE);
             const y = Math.floor(Math.random() * GRID_SIZE);
@@ -18,40 +18,46 @@ export class Grid {
         }
     }
 
-    public revealCurrentCell(playerX: number, playerY: number, playerDirection: PlayerDirection): void {
-        this.hiddenGrid[playerX][playerY] = playerDirection;
+    public printGrid(): void {
+        for (let i = 0; i < GRID_SIZE; i++) {
+            console.log(this.hiddenGrid[i].join(' '));
+        }
+    }
+
+    public revealCell(x: number, y: number, playerDirection?: PlayerDirection): void {
+        if (!this.isOutOfBounds(x, y)) {
+            this.hiddenGrid[x][y] = this.grid[x][y];
+            if (playerDirection) {
+                this.hiddenGrid[x][y] = playerDirection;
+            }
+        }
     }
 
     public revealLineOfSight(playerX: number, playerY: number, playerDirection: PlayerDirection): void {
         let nextX = playerX;
         let nextY = playerY;
-
+    
         while (true) {
             switch (playerDirection) {
-                case PlayerDirection.NORTH:
-                    nextX--;
-                    break;
-                case PlayerDirection.EAST:
-                    nextY++;
-                    break;
-                case PlayerDirection.SOUTH:
-                    nextX++;
-                    break;
-                case PlayerDirection.WEST:
-                    nextY--;
-                    break;
+                case PlayerDirection.NORTH  : nextX--; break;
+                case PlayerDirection.EAST   : nextY++; break;
+                case PlayerDirection.SOUTH  : nextX++; break;
+                case PlayerDirection.WEST   : nextY--; break;
             }
-
-            if (nextX < 0 || nextX >= GRID_SIZE || nextY < 0 || nextY >= GRID_SIZE) {
+    
+            if (this.isOutOfBounds(nextX, nextY)) {
                 break;
             }
-
+    
+            this.hiddenGrid[nextX][nextY] = this.grid[nextX][nextY];
+    
             if (this.grid[nextX][nextY] === OBSTACLE) {
                 break;
             }
-
-            this.hiddenGrid[nextX][nextY] = this.grid[nextX][nextY];
         }
+    }
+    public isOutOfBounds(x: number, y: number): boolean {
+        return x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_SIZE;
     }
     public isObstacle(x: number, y: number): boolean {
         return this.grid[x][y] === OBSTACLE;
@@ -62,14 +68,14 @@ export class Grid {
     public isTreasure(x: number, y: number): boolean {
         return this.grid[x][y] === TREASURE
     }
-    public isOutOfBounds(x: number, y: number): boolean {
-        return x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_SIZE;
-    }
     public clearCell(x: number, y: number): void {
-        this.grid[x][y] = EMPTY_CELL;
         this.hiddenGrid[x][y] = EMPTY_CELL;
     }
-    public getHiddenGrid(): string[][] {
-        return this.hiddenGrid;
+    public getCellType(x: number, y: number): string {
+        if (this.isOutOfBounds(x, y))   return 'OUT_OF_BOUNDS';
+        if (this.isTrap(x, y))          return 'TRAP';
+        if (this.isObstacle(x, y))      return 'OBSTACLE';
+        if (this.isTreasure(x, y))      return 'TREASURE';
+        return 'EMPTY';
     }
 }
