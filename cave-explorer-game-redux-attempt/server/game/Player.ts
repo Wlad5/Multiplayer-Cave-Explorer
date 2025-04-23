@@ -1,17 +1,21 @@
-import { PlayerDirection } from "./constants";
+import { GRID_SIZE, PlayerDirection } from "./constants";
 import { Grid } from "./Grid";
 
 export class Player {
+    private playerId: string;
     private x: number = 0;
     private y: number = 0;
     private playerDirection: PlayerDirection = PlayerDirection.NORTH;
     private grid: Grid;
+    private score: number = 0;
 
-    constructor(grid: Grid) {
-        this.x = 0;
-        this.y = 0;
-        this.playerDirection = PlayerDirection.NORTH;
-        this.grid = grid
+    constructor(playerId: string, grid: Grid) {
+        this.playerId = playerId;
+        this.x = Math.floor(Math.random() * GRID_SIZE);
+        this.y = Math.floor(Math.random() * GRID_SIZE);
+        this.playerDirection = Object.values(PlayerDirection)[Math.floor(Math.random() * Object.values(PlayerDirection).length)];
+        this.grid = grid;
+        this.score = 0;
     }
 
     public turn(left: boolean): void {
@@ -88,6 +92,18 @@ export class Player {
         }
     }
 
+    public addScore(points: number): void {
+        this.score += points;
+    }
+
+    public subtractScore(points: number): void {
+        this.score -= points;
+    }
+
+    public getScore(): number {
+        return this.score;
+    }
+
     public getDirection(): PlayerDirection {
         return this.playerDirection;
     }
@@ -98,5 +114,8 @@ export class Player {
 
     public getY(): number {
         return this.y;
+    }
+    public getId(): string {
+        return this.playerId;
     }
 }

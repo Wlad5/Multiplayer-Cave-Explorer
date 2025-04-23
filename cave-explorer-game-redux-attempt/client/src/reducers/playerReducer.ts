@@ -1,8 +1,8 @@
 import { GRID_SIZE, OBSTACLE, PlayerDirection, TRAP, TREASURE } from "../../../server/game/constants"
-import { MOVE_PLAYER, MovePlayerPayload, PlayerActions, TURN_PLAYER, TurnPlayerPayload, UPDATE_SCORE, UpdateScorePayload } from "./playerActions"
+import { ADD_PLAYER, AddPlayerPayload, MOVE_PLAYER, MovePlayerPayload, PlayerActions, REMOVE_PLAYER, RemovePlayerPayload, TURN_PLAYER, TurnPlayerPayload, UPDATE_SCORE, UpdateScorePayload } from "./playerActions"
 
-export interface PlayerState {
-    playerId: number;
+export interface Player {
+    id: string;
     x: number;
     y: number;
     direction: PlayerDirection;
@@ -10,39 +10,34 @@ export interface PlayerState {
     status: 'idle' | 'moved' | 'hitTrap' | 'hitObstacle' | 'foundTreasure' | 'outOfBounds';
 }
 
-const initialState: PlayerState[] = [
-    {
-        playerId: 0,
-        x: 0,
-        y: 0,
-        direction: PlayerDirection.NORTH,
-        score: 0,
-        status: 'idle'
-    },
-    {
-        playerId: 1,
-        x: 5,
-        y: 5,
-        direction: PlayerDirection.SOUTH,
-        score: 0,
-        status: 'idle'
-    },
-    {
-        playerId: 2,
-        x: 7,
-        y: 7,
-        direction: PlayerDirection.SOUTH,
-        score: 0,
-        status: 'idle'
-    },
-]
+const initialState: Map<string, Player> = new Map();
 
-export const playerReducer = (state: PlayerState[] = initialState, action: PlayerActions): PlayerState[] => {
+export const playerReducer = (state: Map<string, Player> = initialState, action: PlayerActions): Map<string, Player> => {
     switch(action.type) {
+        case ADD_PLAYER: {
+            if ('payload' in action) {
+                const {player} = action.payload as AddPlayerPayload;
+                if (player.id) {
+                    state.set(player.id, player);
+                } else {
+                    console.error(`Player ID is missing`)
+                }
+            }
+            return new Map(state);
+        }
+        case REMOVE_PLAYER: {
+            if ('payload' in action) {
+                const {id} = action.payload as RemovePlayerPayload;
+                if (id) {
+                    state.delete(id);
+                }
+            }
+            return new Map(state);
+        }
         case TURN_PLAYER: {
             const { id, left } = action.payload as TurnPlayerPayload;
-            return state.map(player => {
-                if (player.playerId === id) {
+            const player = state.get(id);
+                if (player) {
                     let newDirection = player.direction;
                     switch (player.direction) {
                         case PlayerDirection.NORTH:
@@ -58,97 +53,105 @@ export const playerReducer = (state: PlayerState[] = initialState, action: Playe
                             newDirection = left ? PlayerDirection.SOUTH : PlayerDirection.NORTH;
                             break;
                     }
-                    return {
+                    state.set(id, {
                         ...player,
                         direction: newDirection,
-                        status: 'idle' as const
-                    };
+                        status: 'idle' as const,
+                    })
                 }
-                return player;
-            });
+            return new Map(state);
         }
             
         case MOVE_PLAYER: {
-            const {id, grid} = action.payload as MovePlayerPayload;
-            return state.map(player => {
-                if (player.playerId === id) {
-                    let newX = player.x;
-                    let newY = player.y;
-                    switch (player.direction) {
-                        case PlayerDirection.NORTH:
-                            newX--;
-                            break;
-                        case PlayerDirection.EAST:
-                            newY++;
-                            break;
-                        case PlayerDirection.SOUTH:
-                            newX++;
-                            break;
-                        case PlayerDirection.WEST:
-                            newY--;
-                            break;
-                    }
-                    if (newX < 0 || newX >= GRID_SIZE || newY < 0 || newY >= GRID_SIZE) {
-                        return {
-                            ...player,
-                            status: 'outOfBounds' as const,
-                            x: player.x,
-                            y: player.y,
-                        };
-                    }
-                    const cellContent = grid[newX][newY];
-                    if (cellContent === OBSTACLE) {
-                        return {
-                            ...player,
-                            status: 'hitObstacle' as const,
-                            x: player.x,
-                            y: player.y,
-                        };
-                    }
-                    const otherPlayer = state.some(pl => pl.x === newX && pl.y === newY && pl.playerId !== player.playerId);
-                    if (otherPlayer) {
-                        return {
-                            ...player,
-                            x: player.x,
-                            y: player.y
-                        }
-                    }
-                    if (cellContent === TRAP) {
-                        return {
-                            ...player,
-                            x: newX,
-                            y: newY,
-                            status: 'hitTrap' as const,
-                        };
-                    } else if (cellContent === TREASURE) {
-                        return {
-                            ...player,
-                            x: newX,
-                            y: newY,
-                            status: 'foundTreasure' as const,
-                        };
-                    }
-                    return {
+            const { id, grid } = action.payload as MovePlayerPayload;
+            const player = state.get(id);
+        
+            if (player) {
+                let newX = player.x;
+                let newY = player.y;
+        
+                switch (player.direction) {
+                    case PlayerDirection.NORTH:
+                        newX--;
+                        break;
+                    case PlayerDirection.EAST:
+                        newY++;
+                        break;
+                    case PlayerDirection.SOUTH:
+                        newX++;
+                        break;
+                    case PlayerDirection.WEST:
+                        newY--;
+                        break;
+                }
+        
+                if (newX < 0 || newX >= GRID_SIZE || newY < 0 || newY >= GRID_SIZE) {
+                    state.set(id, {
+                        ...player,
+                        status: 'outOfBounds',
+                    });
+                    return new Map(state);
+                }
+        
+                const cellContent = grid[newX][newY];
+        
+                if (cellContent === OBSTACLE) {
+                    state.set(id, {
+                        ...player,
+                        status: 'hitObstacle',
+                    });
+                    return new Map(state);
+                }
+        
+                const otherPlayer = Array.from(state.values()).some(
+                    (pl) => pl.x === newX && pl.y === newY && pl.id !== player.id
+                );
+                if (otherPlayer) {
+                    state.set(id, {
+                        ...player,
+                        status: 'idle',
+                    });
+                    return new Map(state);
+                }
+        
+                if (cellContent === TRAP) {
+                    state.set(id, {
                         ...player,
                         x: newX,
                         y: newY,
-                        status: 'moved' as const
-                    };
+                        status: 'hitTrap',
+                    });
+                    return new Map(state);
+                } else if (cellContent === TREASURE) {
+                    state.set(id, {
+                        ...player,
+                        x: newX,
+                        y: newY,
+                        status: 'foundTreasure',
+                    });
+                    return new Map(state);
                 }
-                return player;
-            })
+        
+                state.set(id, {
+                    ...player,
+                    x: newX,
+                    y: newY,
+                    status: 'moved',
+                });
+            }
+        
+            return new Map(state);
         }
         case UPDATE_SCORE: {
-            const {playerId, score} = action.payload as UpdateScorePayload;
-            return state.map(player => {
-                if (player.playerId === playerId) {
-                    return {
+            const {id, score} = action.payload as UpdateScorePayload;
+            const player = state.get(id);
+                if (player) {
+                    state.set(id, {
                         ...player,
                         score: player.score + score
-                    }
+                    })
                 }
-                return player;
-            })
+                return new Map(state);
         }
         default: {
             return state;

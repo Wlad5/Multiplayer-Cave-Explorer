@@ -1,31 +1,48 @@
+import { Player } from "./playerReducer";
+
+export const ADD_PLAYER     = 'ADD_PLAYER';
+export const REMOVE_PLAYER  = 'REMOVE_PLAYER';
 export const TURN_PLAYER    = 'TURN_PLAYER';
 export const MOVE_PLAYER    = 'MOVE_PLAYER';
 export const UPDATE_SCORE   = 'UPDATE_SCORE';
 
-export interface Player {
-    id: number;
-    x: number;
-    y: number;
-    direction: string;
-    score: number;
-    status: 'idle' | 'moved' | 'hitTrap' | 'hitObstacle' | 'foundTreasure' | 'outOfBounds';
+export interface AddPlayerPayload  {
+    player: Player
+}
+
+export interface RemovePlayerPayload {
+    id: string;
 }
 
 export interface TurnPlayerPayload {
-    id: number;
+    id: string;
     left: boolean;
 }
 export interface MovePlayerPayload {
-    id: number;
+    id: string;
     grid: string[][]
 }
 
 export interface UpdateScorePayload {
-    playerId: number;
+    id: string;
     score: number;
 }
 
-export const turnPlayerAC = (id: number, left: boolean) => ({
+export const addPlayerAC = (player: Player) => ({
+    type: ADD_PLAYER,
+    payload: {
+        player
+    }
+})
+
+export const removePlayerAC = (id: string) => ({
+    type: REMOVE_PLAYER,
+    payload: {
+        id
+    }
+})
+
+export const turnPlayerAC = (id: string, left: boolean) => ({
     type: TURN_PLAYER,
     payload: {
         id,
@@ -33,7 +50,7 @@ export const turnPlayerAC = (id: number, left: boolean) => ({
     }
 })
 
-export const movePlayerAC = (id: number,grid: string[][]) => ({
+export const movePlayerAC = (id: string, grid: string[][]) => ({
     type: MOVE_PLAYER,
     payload: {
         id,
@@ -41,20 +58,23 @@ export const movePlayerAC = (id: number,grid: string[][]) => ({
     }
 })
 
-export const updateScoreAC = (playerId: number, score: number) => ({
+export const updateScoreAC = (id: string, score: number) => ({
     type: UPDATE_SCORE,
     payload: {
-        playerId,
+        id,
         score
     }
 })
 
+export type AddPlayer   = ReturnType<typeof addPlayerAC>
+export type RemovePlayer = ReturnType<typeof removePlayerAC>
 export type TurnPlayer  = ReturnType<typeof turnPlayerAC>
 export type MovePlayer  = ReturnType<typeof movePlayerAC>
 export type UpdateScore = ReturnType<typeof updateScoreAC>
 
-
 export type PlayerActions = 
+    | AddPlayer
+    | RemovePlayer
     | TurnPlayer
     | MovePlayer
     | UpdateScore;

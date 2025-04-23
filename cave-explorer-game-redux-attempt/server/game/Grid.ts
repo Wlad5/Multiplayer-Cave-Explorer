@@ -19,6 +19,7 @@ export class Grid {
     }
 
     public revealCurrentCell(playerX: number, playerY: number, playerDirection: PlayerDirection): void {
+        this.grid[playerX][playerY] = playerDirection;
         this.hiddenGrid[playerX][playerY] = playerDirection;
     }
 
@@ -46,11 +47,11 @@ export class Grid {
                 break;
             }
 
+            this.hiddenGrid[nextX][nextY] = this.grid[nextX][nextY];
+            
             if (this.grid[nextX][nextY] === OBSTACLE) {
                 break;
             }
-
-            this.hiddenGrid[nextX][nextY] = this.grid[nextX][nextY];
         }
     }
     public isObstacle(x: number, y: number): boolean {
@@ -68,8 +69,5 @@ export class Grid {
     public clearCell(x: number, y: number): void {
         this.grid[x][y] = EMPTY_CELL;
         this.hiddenGrid[x][y] = EMPTY_CELL;
-    }
-    public getHiddenGrid(): string[][] {
-        return this.hiddenGrid;
     }
 }

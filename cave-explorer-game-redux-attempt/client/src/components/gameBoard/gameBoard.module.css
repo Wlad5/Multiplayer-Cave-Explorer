@@ -4,3 +4,8 @@
 .player {
     color: red
 }
+
+.currentPlayer {
+    background-color: yellow;
+    color: red;
+}

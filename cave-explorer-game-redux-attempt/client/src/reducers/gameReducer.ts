@@ -1,4 +1,4 @@
-import { GameActions, START_GAME, EXIT_GAME, END_GAME, SHOW_MESSAGE, ShowMessagePayload, NEXT_TURN, NextTurnPayload, SET_GAME_TIMER, SetGameTimerPayload, SET_TURN_TIMER, SetTurnTimerPayload, SET_MOVE_MADE, SetMoveMadePayload, EndGamePayload } from "./gameActions";
+import { GameActions, START_GAME, EXIT_GAME, END_GAME, SHOW_MESSAGE, ShowMessagePayload, SET_GAME_TIMER, SetGameTimerPayload, SET_TURN_TIMER, SetTurnTimerPayload, SET_MOVE_MADE, SetMoveMadePayload, EndGamePayload, SetCurrentPlayerPayload, SET_CURRENT_PLAYER } from "./gameActions";
 
 export interface GameState {
     score: number;
@@ -8,7 +8,7 @@ export interface GameState {
     turnTimer: number | null;
     turnTimeLeft: number;
     message?: string;
-    currentPlayer: number;
+    currentPlayer: string | null;
     playerMoved: boolean;
     leaderBoard: {playerId: number, score: number}[] | [];
 }
@@ -21,7 +21,7 @@ export const initialState: GameState = {
     turnTimer: null,
     turnTimeLeft: 10000,
     message: '',
-    currentPlayer: 0,
+    currentPlayer: null,
     playerMoved: false,
     leaderBoard: [],
 }
@@ -48,25 +48,25 @@ export const gameReducer = (state: GameState = initialState, action: GameActions
             }
         }
         case END_GAME:
-    if (state.gameTimer && state.turnTimer) {
-        clearInterval(state.gameTimer);
-        clearInterval(state.turnTimer);
-    }
-    if ('payload' in action) {
-        const { playersScores } = action.payload as EndGamePayload;
-        const sortedPlayerScores = playersScores.sort((a, b) => b.score - a.score);
-        console.log(playersScores)
-        return {
-            ...state,
-            gameStatus: 'ended',
-            gameTimer: null,
-            turnTimer: null,
-            gameTimeLeft: 0,
-            turnTimeLeft: 0,
-            leaderBoard: sortedPlayerScores
-        };
-    }
-    return state;
+            if (state.gameTimer && state.turnTimer) {
+                clearInterval(state.gameTimer);
+                clearInterval(state.turnTimer);
+            }
+            if ('payload' in action) {
+                const { playersScores } = action.payload as EndGamePayload;
+                const sortedPlayerScores = playersScores.sort((a, b) => b.score - a.score);
+                console.log(playersScores)
+                return {
+                    ...state,
+                    gameStatus: 'ended',
+                    gameTimer: null,
+                    turnTimer: null,
+                    gameTimeLeft: 0,
+                    turnTimeLeft: 0,
+                    leaderBoard: sortedPlayerScores
+                };
+            }
+            return state;
         case SHOW_MESSAGE: {
             if ('payload' in action) {
                 const {message} = action.payload as ShowMessagePayload;
@@ -77,15 +77,12 @@ export const gameReducer = (state: GameState = initialState, action: GameActions
             }
             return state;
         }
-        case NEXT_TURN: {
+        case SET_CURRENT_PLAYER: {
             if ('payload' in action) {
-                const {length} = action.payload as NextTurnPayload;    
-                const nextPlayer = (state.currentPlayer + 1) % length;
+                const {playerId} = action.payload as SetCurrentPlayerPayload;
                 return {
                     ...state,
-                    currentPlayer: nextPlayer,
-                    playerMoved: false,
-                    turnTimeLeft: 10000
+                    currentPlayer: playerId
                 }
             }
             return state;
