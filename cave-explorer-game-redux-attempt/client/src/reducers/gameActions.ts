@@ -6,6 +6,7 @@ export const SET_CURRENT_PLAYER = 'SET_CURRENT_PLAYER';
 export const SET_GAME_TIMER = 'SET_GAME_TIMER';
 export const SET_TURN_TIMER = 'SET_TURN_TIMER';
 export const SET_MOVE_MADE  = 'SET_MOVE_MADE';
+export const SET_ACTIVE_GAMES = 'SET_ACTIVE_GAMES';
 
 export interface ShowMessagePayload {
     message: string;
@@ -31,6 +32,10 @@ export interface SetMoveMadePayload {
 
 export interface EndGamePayload {
     playersScores: {playerId: number, score: number}[];
+}
+
+export interface SetActiveGamesPayload {
+    activeGames: string[];
 }
 
 export const startGameAC = () => ({
@@ -83,59 +88,12 @@ export const setMoveMadeAC = (moveMade: boolean) => ({
     }
 })
 
-// export const gameTimerTC = (): AppThunk => (dispatch: Dispatch<GameActions>, getState: () => RootState) => {
-//     dispatch(startGameAC());
-//     const existingTimer = getState().game.gameTimer;
-//     const players       = getState().player;
-//     let timeLeft        = getState().game.gameTimeLeft;
-//     if (existingTimer) clearInterval(existingTimer);
-//     const timerId = window.setInterval(() => {
-//         timeLeft -= 1000;
-//         console.log("Time left:", timeLeft);
-//         dispatch(setGameTimerAC(timerId, timeLeft));
-//         if (timeLeft <= 0) {
-//             clearInterval(timerId);
-//             const playersScore = players.map((player) => {
-//                 return {playerId: player.playerId, score:player.score}
-//             })
-//             dispatch(endGameAC(playersScore));
-//         }
-//     }, 1000);
-// };
-
-// export const turnTimerTC = (): AppThunk => (dispatch: Dispatch<GameActions>, getState: () => RootState) => {
-//     const existingTurnTimer = getState().game.turnTimer;
-//     const currentPlayer     = getState().game.currentPlayer;
-//     const playerMoved       = getState().game.playerMoved;
-//     const players           = getState().player;
-//     const gameTimeLeft      = getState().game.gameTimeLeft;
-//     const gameStatus        = getState().game.gameStatus;
-//     let turnTimeLeft        = getState().game.turnTimeLeft;
-//     if (gameStatus !== 'in_progress') return;
-//     console.log(`${currentPlayer} player's turn`);
-//     if (existingTurnTimer) {
-//         clearInterval(existingTurnTimer);
-//         dispatch(setTurnTimerAC(0, getState().game.turnTimeLeft))
-//     } 
-//     const turnTimerId = window.setInterval(() => {
-//         if (gameTimeLeft <= turnTimeLeft || gameTimeLeft <= 0) {
-//             clearInterval(turnTimerId);
-//             const playersScore = players.map((player) => {
-//                 return {playerId: player.playerId, score:player.score}
-//             })
-//             dispatch(endGameAC(playersScore));
-//             return;
-//         }
-//         turnTimeLeft -= 1000;
-//         console.log(`Turn time left: `, turnTimeLeft);
-//         dispatch(setTurnTimerAC(turnTimerId, turnTimeLeft));
-//         if (turnTimeLeft <= 0 || playerMoved) {
-//             clearInterval(turnTimerId);
-//             dispatch(nextTurnAC(players.length));
-//         }
-//     }, 1000);
-//     dispatch(setTurnTimerAC(turnTimerId, turnTimeLeft));
-// }
+export const setActiveGamesAC = (activeGames: string[]) => ({
+    type: SET_ACTIVE_GAMES,
+    payload: {
+        activeGames
+    }
+})
 
 export type StartGame       = ReturnType<typeof startGameAC>
 export type EndGame         = ReturnType<typeof endGameAC>
@@ -145,6 +103,7 @@ export type SetGameTimer    = ReturnType<typeof setGameTimerAC>
 export type SetTurnTimer    = ReturnType<typeof setTurnTimerAC>
 export type SetMoveMade     = ReturnType<typeof setMoveMadeAC>
 export type SetCurrentPlayer = ReturnType<typeof setCurrentPlayerAC>
+export type SetActiveGames  = ReturnType<typeof setActiveGamesAC>
 export type GameActions     = 
     | StartGame
     | ExitGame
@@ -153,4 +112,5 @@ export type GameActions     =
     | ShowMessage
     | SetGameTimer
     | SetTurnTimer
-    | SetMoveMade;
+    | SetMoveMade
+    | SetActiveGames;

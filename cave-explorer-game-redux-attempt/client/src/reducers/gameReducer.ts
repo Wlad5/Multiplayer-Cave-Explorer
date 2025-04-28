@@ -1,4 +1,4 @@
-import { GameActions, START_GAME, EXIT_GAME, END_GAME, SHOW_MESSAGE, ShowMessagePayload, SET_GAME_TIMER, SetGameTimerPayload, SET_TURN_TIMER, SetTurnTimerPayload, SET_MOVE_MADE, SetMoveMadePayload, EndGamePayload, SetCurrentPlayerPayload, SET_CURRENT_PLAYER } from "./gameActions";
+import { GameActions, START_GAME, EXIT_GAME, END_GAME, SHOW_MESSAGE, ShowMessagePayload, SET_GAME_TIMER, SetGameTimerPayload, SET_TURN_TIMER, SetTurnTimerPayload, SET_MOVE_MADE, SetMoveMadePayload, EndGamePayload, SetCurrentPlayerPayload, SET_CURRENT_PLAYER, SetActiveGamesPayload } from "./gameActions";
 
 export interface GameState {
     score: number;
@@ -11,6 +11,7 @@ export interface GameState {
     currentPlayer: string | null;
     playerMoved: boolean;
     leaderBoard: {playerId: number, score: number}[] | [];
+    activeGames: string[] | [];
 }
 
 export const initialState: GameState = {
@@ -24,6 +25,7 @@ export const initialState: GameState = {
     currentPlayer: null,
     playerMoved: false,
     leaderBoard: [],
+    activeGames: []
 }
 
 export const gameReducer = (state: GameState = initialState, action: GameActions): GameState => {
@@ -115,6 +117,16 @@ export const gameReducer = (state: GameState = initialState, action: GameActions
                 return {
                     ...state,
                     playerMoved: moveMade
+                }
+            }
+            return state;
+        }
+        case 'SET_ACTIVE_GAMES': {
+            if ('payload' in action) {
+                const {activeGames} = action.payload as SetActiveGamesPayload;
+                return {
+                    ...state,
+                    activeGames: activeGames
                 }
             }
             return state;

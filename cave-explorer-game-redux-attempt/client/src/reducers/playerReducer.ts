@@ -7,6 +7,7 @@ export interface Player {
     y: number;
     direction: PlayerDirection;
     score: number;
+    username: string;
     status: 'idle' | 'moved' | 'hitTrap' | 'hitObstacle' | 'foundTreasure' | 'outOfBounds';
 }
 
@@ -18,12 +19,14 @@ export const playerReducer = (state: Map<string, Player> = initialState, action:
             if ('payload' in action) {
                 const {player} = action.payload as AddPlayerPayload;
                 if (player.id) {
-                    state.set(player.id, player);
+                    const newState = new Map(state);
+                    newState.set(player.id, player);
+                    return newState;
                 } else {
                     console.error(`Player ID is missing`)
                 }
             }
-            return new Map(state);
+            return state;
         }
         case REMOVE_PLAYER: {
             if ('payload' in action) {

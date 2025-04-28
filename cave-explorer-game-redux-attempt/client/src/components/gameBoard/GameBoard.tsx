@@ -7,22 +7,29 @@ interface GameBoardProps {
 }
 
 export const GameBoard: React.FC<GameBoardProps> = ({ exit }) => {
-  const grid = useSelector((state: RootState) => state.grid.grid);
-  // const hiddenGrid = useSelector((state: RootState) => state.grid.hiddenGrid);
+  const hiddenGrid = useSelector((state: RootState) => state.grid.hiddenGrid);
   const currentPlayer = useSelector((state: RootState) => state.game.currentPlayer) as { x: number; y: number } | null;
+  
 
   const renderGrid = () => {
-    return grid.map((row, rowIndex) => (
+    return hiddenGrid.map((row, rowIndex) => (
       <div key={rowIndex} className="row">
         {row.map((cell, cellIndex) => {
           const isCurrentPlayer =
             rowIndex === currentPlayer?.x && cellIndex === currentPlayer?.y;
           const cellClass = 
-          isCurrentPlayer
-            ? `${styles.currentPlayer} cell`
-            : cell === "^" || cell === ">" || cell === "v" || cell === "<"
-            ? `${styles.player} cell`
-            : "cell";
+            isCurrentPlayer
+              ? `${styles.currentPlayer} cell`
+              : cell === "^" || cell === ">" || cell === "v" || cell === "<"
+              ? `${styles.player} cell`
+              : cell === "T"
+              ? `${styles.treasure} cell`
+              : cell === "X"
+              ? `${styles.trap} cell`
+              : cell === "O"
+              ? `${styles.obstacle} cell`
+              : "cell";
+
           return (
             <span key={cellIndex} className={cellClass}>
               {cell}
