@@ -6,15 +6,15 @@ export class Player {
     private x: number = 0;
     private y: number = 0;
     private playerDirection: PlayerDirection = PlayerDirection.NORTH;
-    private grid: Grid;
     private score: number = 0;
+    private username: string;
 
-    constructor(playerId: string, grid: Grid) {
+    constructor(playerId: string, username: string) {
         this.playerId = playerId;
         this.x = Math.floor(Math.random() * GRID_SIZE);
         this.y = Math.floor(Math.random() * GRID_SIZE);
         this.playerDirection = Object.values(PlayerDirection)[Math.floor(Math.random() * Object.values(PlayerDirection).length)];
-        this.grid = grid;
+        this.username = username;
         this.score = 0;
     }
 
@@ -35,10 +35,10 @@ export class Player {
         }
     }
 
-    public moveForward() {
+    public moveForward(grid: Grid) {
         let newX = this.x;
         let newY = this.y;
-
+    
         switch (this.playerDirection) {
             case PlayerDirection.NORTH:
                 newX--;
@@ -53,35 +53,39 @@ export class Player {
                 newY--;
                 break;
         }
-
-        const outOfBounds = this.grid.isOutOfBounds(newX, newY);
+    
+        const outOfBounds = grid.isOutOfBounds(newX, newY);
         
-        if (outOfBounds) return {
-            newX,
-            newY,
-            outOfBounds: true,
-            hitObstacle: false,
-            hitTrap: false,
-            foundTreasure: false
-        };
+        if (outOfBounds) {
+            return {
+                newX,
+                newY,
+                outOfBounds: true,
+                hitObstacle: false,
+                hitTrap: false,
+                foundTreasure: false
+            };
+        }
+        const hitTrap = grid.isTrap(newX, newY);
+        const foundTreasure = grid.isTreasure(newX, newY);
+        const hitObstacle = grid.isObstacle(newX, newY);
         
-
-        const hitTrap = this.grid.isTrap(newX, newY);
-        const foundTreasure = this.grid.isTreasure(newX, newY);
-        if (this.grid.isObstacle(newX, newY)) return {
-            newX,
-            newY,
-            outOfBounds: false,
-            hitObstacle: true,
-            hitTrap: false,
-            foundTreasure: false
-        };
-        
-        if (hitTrap || foundTreasure) this.grid.clearCell(newX, newY);
-        if (newX === 0 && newY === 0) window.close()
-
+        if (hitObstacle) {
+            return {
+                outOfBounds: false,
+                hitObstacle: true,
+                hitTrap: false,
+                foundTreasure: false,
+            }
+        }
+    
+        if (hitTrap || foundTreasure) {
+            grid.clearCell(newX, newY);
+        }
+    
         this.x = newX;
         this.y = newY;
+    
         return {
             newX,
             newY,
@@ -89,7 +93,7 @@ export class Player {
             hitObstacle: false,
             hitTrap,
             foundTreasure
-        }
+        };
     }
 
     public addScore(points: number): void {
@@ -117,5 +121,8 @@ export class Player {
     }
     public getId(): string {
         return this.playerId;
+    }
+    public getUsername(): string {
+        return this.username;
     }
 }
