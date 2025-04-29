@@ -22,7 +22,6 @@ export class Game {
         }
         const prevX = player.getX();
         const prevY = player.getY();
-        let playerScore = player.getScore();
         let resultMessage = ``;
         switch (move) {
             case "L": {
@@ -38,11 +37,11 @@ export class Game {
                 if (result.outOfBounds) {
                     resultMessage = `Cannot move forward! Out of bounds.`;
                 } else if (result.hitTrap) {
-                    resultMessage = `You hit a trap! Your score is now ${playerScore - 10}`;
+                    resultMessage = `You hit a trap! Your score is now ${player.getScore()}`;
                     player.subtractScore(10);
                     console.log(`Player ${player.getId()} has ${player.getScore()} points`)
                 } else if (result.foundTreasure) {
-                    resultMessage = `You found treasure! Your score is now ${playerScore + 5}`;
+                    resultMessage = `You found treasure! Your score is now ${player.getScore()}`;
                     player.addScore(5);
                     console.log(`Player ${player.getId()} has ${player.getScore()} points`)
 

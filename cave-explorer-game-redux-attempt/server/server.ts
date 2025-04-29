@@ -15,13 +15,13 @@ const io = new Server(httpServer, {
   },
 });
 
-const game = new Game();
 let gameEnded = false;
 let turnTimeLeft = 10000;
 let gameTimeLeft = 1 * 60 * 1000;
 let currentPlayerId: string | null = null;
 let turnTimer: NodeJS.Timeout | null = null;
 let gameTimer: NodeJS.Timeout | null = null;
+const gameTimers = new Map<string, NodeJS.Timeout>();
 
 const games = new Map<string, Game>();
 const playerGameMap = new Map<string, string>();
@@ -29,7 +29,18 @@ const playerGameMap = new Map<string, string>();
 io.on('connection', (socket) => {
 
   socket.on('createGame', ({ username }) => {
-    startGameTimer();
+    gameEnded = false;
+    currentPlayerId = null;
+    if (turnTimer) {
+      clearInterval(turnTimer);
+      turnTimer = null;
+    }
+    if (gameTimer) {
+      clearInterval(gameTimer);
+      gameTimer = null;
+    }
+    gameTimeLeft = 1 * 60 * 1000;
+    turnTimeLeft = 10000;
     if (!currentPlayerId) {
       currentPlayerId = socket.id;
       startTurnTimer(currentPlayerId);
@@ -40,6 +51,7 @@ io.on('connection', (socket) => {
     }
     const gameId = v4();
     const newGame = new Game();
+    startGameTimer(gameId);
     games.set(gameId, newGame);
     playerGameMap.set(socket.id, gameId);
     newGame.addPlayer(socket.id, username);
@@ -97,7 +109,7 @@ socket.on('joinGame', ({ gameId, username }) => {
       score: player.getScore(),
       username: player.getUsername(),
   }));
-  socket.emit('playersUpdated', players);
+  socket.emit('playerJoined', players);
   socket.emit('gameState', game.getHiddenGrid());
   if (!currentPlayerId) {
       currentPlayerId = socket.id;
@@ -111,32 +123,46 @@ socket.on('joinGame', ({ gameId, username }) => {
     socket.emit('activeGames', activeGames);
   })
 
-  socket.on('playerMove', ({move, playerId}) => {
+  socket.on('playerMove', ({ move, playerId }) => {
     const gameId = playerGameMap.get(socket.id);
     const game = games.get(gameId!);
     if (!gameId || !games.has(gameId)) {
-      socket.emit('error', {message: `You are not in a game!`});
-      return;
+        socket.emit('error', { message: `You are not in a game!` });
+        return;
     }
     if (gameEnded) {
-      console.log('Game has ended!');
-      return;
+        console.log('Game has ended!');
+        return;
     }
     if (playerId !== currentPlayerId) {
-      console.log(`It's not player ${playerId}'s turn!`);
-      socket.emit('message', `It's not your turn!`);
-      return;
+        console.log(`It's not player ${playerId}'s turn!`);
+        socket.emit('message', `It's not your turn!`);
+        return;
     }
     if (!game?.getPlayers().has(playerId)) {
-      return;
+        return;
     }
     clearInterval(turnTimer!);
     const resultMessage = game?.playMove(move, socket.id);
     const updatedGrid = game?.getHiddenGrid();
+    const updatedPlayer = game?.getPlayers().get(playerId);
+
     io.to(gameId).emit('gameState', updatedGrid);
     io.to(gameId).emit('message', resultMessage);
+
+    if (updatedPlayer) {
+        io.to(gameId).emit('playerUpdated', {
+            id: updatedPlayer.getId(),
+            x: updatedPlayer.getX(),
+            y: updatedPlayer.getY(),
+            direction: updatedPlayer.getDirection(),
+            score: updatedPlayer.getScore(),
+            username: updatedPlayer.getUsername(),
+        });
+    }
+
     nextPlayer();
-  })
+});
 
   socket.on('leaveGame', () => {
     const gameId = playerGameMap.get(socket.id);
@@ -150,11 +176,8 @@ socket.on('joinGame', ({ gameId, username }) => {
     socket.leave(gameId);
     io.to(gameId).emit('playerLeft', socket.id);
     console.log(`Player ${socket.id} left game ${gameId}`);
-    if (game?.getPlayers().size === 0) {
-      games.delete(gameId);
-      console.log(`Game ${gameId} deleted`);
+    
     io.emit('activeGames', Array.from(games.keys()));
-    }
   })
 
   socket.on('disconnect', () => {
@@ -168,24 +191,23 @@ socket.on('joinGame', ({ gameId, username }) => {
     socket.leave(gameId);
     io.to(gameId).emit('playerLeft', {playerId: socket.id});
     console.log(`Player ${socket.id} disconnected from game ${gameId}`);
-    if (game?.getPlayers().size === 0) {
-      games.delete(gameId);
-      console.log(`Game ${gameId} deleted`);
-      io.emit('activeGames', Array.from(games.keys()));
-    }
+    
+    io.emit('activeGames', Array.from(games.keys()));
   })
 });
 
-const startGameTimer = () => {
-  if (gameTimer) return;
-  gameTimer = setInterval(() => {
+const startGameTimer = (gameId: string) => {
+  if (gameTimers.has(gameId)) return;
+  let gameTimerLeft = 1 * 60 * 1000;
+  const timer = setInterval(() => {
     gameTimeLeft -= 1000;
-    io.emit('gameTimeUpdate', gameTimeLeft);
+    io.to(gameId).emit('gameTimeUpdate', gameTimeLeft);
     if (gameTimeLeft <= 0) {
       clearInterval(gameTimer!);
-      endGame();
+      endGame(gameId);
     }
   }, 1000);
+  gameTimers.set(gameId, timer);
 };
 
 const startTurnTimer = (playerId: string) => {
@@ -248,19 +270,31 @@ const nextPlayer = () => {
   startTurnTimer(nextPlayerId);
 };
 
-const endGame = () => {
-  gameEnded = true;
-  if (turnTimer) {
-    clearInterval(turnTimer);
-    io.emit('turnTimerUpdate', { playerId: currentPlayerId, timeLeft: 0 });
-    turnTimer = null;
+const endGame = (gameId: string) => {
+  const game = games.get(gameId);
+  if (!game) {
+    console.error(`Game ${gameId} not found!`);
+    return;
   }
+
+  const timer = gameTimers.get(gameId);
+  if (timer) {
+    clearInterval(timer);
+    gameTimers.delete(gameId);
+  }
+
   const playerScores = Array.from(game.getPlayers().values()).map(player => ({
     playerId: player.getId(),
     score: player.getScore(),
   }));
-  io.emit('gameEnded', { playersScores: playerScores });
-  io.emit('message', 'Game Over!');
+
+  io.to(gameId).emit('gameEnded', { playersScores: playerScores });
+  io.to(gameId).emit('message', 'Game Over!');
+
+  games.delete(gameId);
+  console.log(`Game ${gameId} deleted!`);
+
+  io.emit('activeGames', Array.from(games.keys()));
 };
 
 httpServer.listen(port, () => {
