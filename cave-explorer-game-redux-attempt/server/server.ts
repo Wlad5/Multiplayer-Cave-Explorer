@@ -3,6 +3,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { Game } from './game/Game';
 import { v4 } from 'uuid';
+import { clear } from 'console';
 
 const app = express();
 const port = 3000;
@@ -17,11 +18,12 @@ const io = new Server(httpServer, {
 
 let gameEnded = false;
 let turnTimeLeft = 10000;
-let gameTimeLeft = 1 * 60 * 1000;
+// let gameTimeLeft = 1 * 60 * 1000;
 let currentPlayerId: string | null = null;
 let turnTimer: NodeJS.Timeout | null = null;
 let gameTimer: NodeJS.Timeout | null = null;
 const gameTimers = new Map<string, NodeJS.Timeout>();
+const gameTimeLeftMap = new Map<string, number>();
 
 const games = new Map<string, Game>();
 const playerGameMap = new Map<string, string>();
@@ -29,6 +31,7 @@ const playerGameMap = new Map<string, string>();
 io.on('connection', (socket) => {
 
   socket.on('createGame', ({ username }) => {
+    const gameId = v4();
     gameEnded = false;
     currentPlayerId = null;
     if (turnTimer) {
@@ -39,17 +42,16 @@ io.on('connection', (socket) => {
       clearInterval(gameTimer);
       gameTimer = null;
     }
-    gameTimeLeft = 1 * 60 * 1000;
+    // gameTimeLeft = 1 * 60 * 1000;
     turnTimeLeft = 10000;
     if (!currentPlayerId) {
       currentPlayerId = socket.id;
-      startTurnTimer(currentPlayerId);
+      startTurnTimer(currentPlayerId, gameId);
     }
     if (playerGameMap.has(socket.id)) {
       socket.emit('error', { message: `You are already in a game!` });
       return;
     }
-    const gameId = v4();
     const newGame = new Game();
     startGameTimer(gameId);
     games.set(gameId, newGame);
@@ -113,7 +115,7 @@ socket.on('joinGame', ({ gameId, username }) => {
   socket.emit('gameState', game.getHiddenGrid());
   if (!currentPlayerId) {
       currentPlayerId = socket.id;
-      startTurnTimer(currentPlayerId);
+      startTurnTimer(currentPlayerId, gameId);
   }
   console.log(`Player ${socket.id} joined game ${gameId}`);
 });
@@ -198,20 +200,30 @@ socket.on('joinGame', ({ gameId, username }) => {
 
 const startGameTimer = (gameId: string) => {
   if (gameTimers.has(gameId)) return;
-  let gameTimerLeft = 1 * 60 * 1000;
+
+  // Initialize time left for this game
+  gameTimeLeftMap.set(gameId, 1 * 60 * 1000);
+
   const timer = setInterval(() => {
-    gameTimeLeft -= 1000;
-    io.to(gameId).emit('gameTimeUpdate', gameTimeLeft);
-    if (gameTimeLeft <= 0) {
-      clearInterval(gameTimer!);
+    const timeLeft = gameTimeLeftMap.get(gameId)! - 1000; // Decrement time for this game
+    gameTimeLeftMap.set(gameId, timeLeft);
+
+    io.to(gameId).emit('gameTimeUpdate', timeLeft);
+
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      gameTimers.delete(gameId);
+      gameTimeLeftMap.delete(gameId);
       endGame(gameId);
     }
   }, 1000);
+
   gameTimers.set(gameId, timer);
 };
 
-const startTurnTimer = (playerId: string) => {
-  if (gameEnded || gameTimeLeft <= 0) {
+const startTurnTimer = (playerId: string, gameId: string) => {
+  const gameTimeLeft = gameTimeLeftMap.get(gameId)
+  if (gameEnded || gameTimeLeft! <= 0) {
     console.log('The game has ended!')
     return;
   }
@@ -252,6 +264,8 @@ const nextPlayer = () => {
   if (players.length === 0) {
     console.error("No players left in the game!");
     currentPlayerId = null;
+    clearInterval(turnTimer!);
+    turnTimer = null;
     return;
   }
 
@@ -267,7 +281,7 @@ const nextPlayer = () => {
   currentPlayerId = nextPlayerId;
   io.to(gameId).emit('currentPlayer', { id: currentPlayerId, x: nextPlayer?.getX(), y: nextPlayer?.getY() });
   io.to(gameId).emit('turnTimerUpdate', { playerId: currentPlayerId, timeLeft: turnTimeLeft });
-  startTurnTimer(nextPlayerId);
+  startTurnTimer(nextPlayerId, gameId);
 };
 
 const endGame = (gameId: string) => {
@@ -282,6 +296,8 @@ const endGame = (gameId: string) => {
     clearInterval(timer);
     gameTimers.delete(gameId);
   }
+
+  gameTimeLeftMap.delete(gameId);
 
   const playerScores = Array.from(game.getPlayers().values()).map(player => ({
     playerId: player.getId(),
