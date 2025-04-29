@@ -67,11 +67,15 @@ export class Game {
 
     public addPlayer(playerId: string, username: string): void {
         console.log(`Adding player with ID: ${playerId}`);
+        if (this.players.has(playerId)) {
+            return;
+        }
         let player: Player;
         let attempts = 0;
         const maxAttempts = 20;
         do {
             player = new Player(playerId, username);
+            this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection());
             attempts++;
         } while (
             this.grid.isObstacle(player.getX(), player.getY()) &&
@@ -86,7 +90,6 @@ export class Game {
             return;
         }
         this.players.set(playerId, player);
-        this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection());
         console.log(this.players);
     }
     public removePlayer(playerId: string): void {

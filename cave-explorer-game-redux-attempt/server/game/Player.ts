@@ -125,4 +125,17 @@ export class Player {
     public getUsername(): string {
         return this.username;
     }
+    public setPosition(x: number, y: number): void {
+        this.x = x;
+        this.y = y;
+    }
+    public setDirection(direction: PlayerDirection): void {
+        this.playerDirection = direction;
+    }
+    public setScore(score: number): void {
+        this.score = score;
+    }
+    public setUsername(username: string): void {
+        this.username = username;
+    }
 }
