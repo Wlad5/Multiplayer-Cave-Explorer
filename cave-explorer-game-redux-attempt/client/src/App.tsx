@@ -3,9 +3,9 @@ import { AppDispatch, RootState } from "./store";
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { initializeGridAC } from "./reducers/gridActions";
-import { endGameAC, setActiveGamesAC, setCurrentPlayerAC, setGameTimerAC, setTurnTimerAC, showMessageAC, startGameAC } from "./reducers/gameActions";
+import { endGameAC, exitGameAC, setActiveGamesAC, setCurrentPlayerAC, setGameTimerAC, setTurnTimerAC, showMessageAC, startGameAC } from "./reducers/gameActions";
 import Gameboard from "./components/gameBoard/GameBoard";
-import { addPlayerAC, movePlayerAC, removePlayerAC, turnPlayerAC } from "./reducers/playerActions";
+import { addPlayerAC, movePlayerAC, removePlayerAC, turnPlayerAC, updateScoreAC } from "./reducers/playerActions";
 import { Player } from "./reducers/playerReducer";
 import { StartScreen } from "./components/startScreen/StartScreen";
 
@@ -34,13 +34,16 @@ function App() {
       dispatch(addPlayerAC(newPlayer));
     })
 
-    socket.on('playersUpdated', (players) => {
+    socket.on('playerJoined', (players) => {
       console.log('Updated players list:', players);
       players.forEach((player: Player) => {
         dispatch(addPlayerAC(player));
       });
     });
-
+    socket.on('playerUpdated', (updatedPlayer) => {
+      console.log(`Player updated: ${updatedPlayer}`);
+      dispatch(updateScoreAC(updatedPlayer.id, updatedPlayer.score));
+  });
     socket.on('currentPlayer', (playerId) => {
       dispatch(setCurrentPlayerAC(playerId));
     });
@@ -71,14 +74,15 @@ function App() {
     return () => {
       socket.off('activeGames');
       socket.off('playerAdded');
-      socket.off('playersUpdated');
+      socket.off('playerJoined');
+      socket.off('playerUpdated');
       socket.off('currentPlayer');
       socket.off('gameState');
       socket.off('message');
       socket.off('gameTimeUpdate');
       socket.off('turnTimeUpdate');
     }
-  }, [dispatch]);
+  }, [dispatch, players]);
   const handleMove = ( move: string) => {
     socket.emit('playerMove', { playerId: socket.id, move });
     switch(move) {
@@ -96,7 +100,8 @@ function App() {
     }
   }
   useEffect(() => {
-    console.log('redux', players)
+    const player = players.get(socket.id!);
+    if (player) console.log(`Player score: ${player.score}`);
   }, [players])
 
   const play = () => {
@@ -113,12 +118,19 @@ function App() {
     if (username.trim()) {
       socket.emit('joinGame', {username, gameId});
       dispatch(startGameAC());
+    } else {
+      alert(`Please enter a username!`);
     }
+  }
+
+  const exitGame = () => {
+    dispatch(exitGameAC());
+    socket.emit('leaveGame', {playerId: socket.id});
   }
 
   return (
     <div className="app">
-      {gameStatus === 'not_started' ? (
+      {gameStatus === 'not_started' || gameStatus === 'ended' ? (
         <StartScreen
           play={play}
           join={joinGame}
@@ -130,7 +142,7 @@ function App() {
         <>
           <div>Game Time Left: {gameTimeLeft / 1000}s</div>
           <div>Turn Time Left: {turnTimeLeft / 1000}s</div>
-          <Gameboard/>
+          <Gameboard exit={exitGame}/>
           {message && <div className="message">{message}</div>}
           <button onClick={() => handleMove('L')}>Left</button>
           <button onClick={() => handleMove('R')}>Right</button>

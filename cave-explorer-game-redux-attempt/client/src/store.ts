@@ -1,6 +1,6 @@
 import { combineReducers, createStore, applyMiddleware } from 'redux';
 import { gridReducer, GridState} from './reducers/gridReducer';
-import { playerReducer, PlayerState} from './reducers/playerReducer';
+import { Player, playerReducer} from './reducers/playerReducer';
 import { gameReducer, GameState} from './reducers/gameReducer';
 import { thunk, ThunkAction } from 'redux-thunk';
 import { ThunkMiddleware } from 'redux-thunk';
@@ -12,7 +12,7 @@ export type AppActions = GameActions | GridActions | PlayerActions;
 
 export interface RootState {
     grid: GridState;
-    player: PlayerState[];
+    player: Map<string, Player>;
     game: GameState;
 }
 

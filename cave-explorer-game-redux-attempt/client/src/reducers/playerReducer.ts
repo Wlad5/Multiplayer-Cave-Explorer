@@ -151,7 +151,7 @@ export const playerReducer = (state: Map<string, Player> = initialState, action:
                 if (player) {
                     state.set(id, {
                         ...player,
-                        score: player.score + score
+                        score: score
                     })
                 }
                 return new Map(state);
