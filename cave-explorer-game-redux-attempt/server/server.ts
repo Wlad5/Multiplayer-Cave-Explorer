@@ -22,11 +22,13 @@ let turnTimeLeft = 10000;
 let currentPlayerId: string | null = null;
 let turnTimer: NodeJS.Timeout | null = null;
 let gameTimer: NodeJS.Timeout | null = null;
-const gameTimers = new Map<string, NodeJS.Timeout>();
-const gameTimeLeftMap = new Map<string, number>();
-
-const games = new Map<string, Game>();
-const playerGameMap = new Map<string, string>();
+const games               = new Map<string, Game>();
+const gameTimers          = new Map<string, NodeJS.Timeout>();
+const gameTimeLeftMap     = new Map<string, number>();
+const turnTimers          = new Map<string, NodeJS.Timeout>();
+const turnTimeLeftMap     = new Map<string, number>();
+const playerGameMap       = new Map<string, string>();
+const currentPlayerMap    = new Map<string, string>();
 const disconnectedPlayers = new Map<string, {gameId: string, x: number, y: number, direction: PlayerDirection, score: number, username: string}>();
 
 io.on('connection', (socket) => {
@@ -125,6 +127,7 @@ io.on('connection', (socket) => {
       username: newPlayer?.getUsername(),
     };
     io.to(gameId).emit('playerAdded', newPlayerData);
+    io.to(gameId).emit('gameState', game.getHiddenGrid());
     const players = Array.from(game.getPlayers().values()).map(player => ({
         id: player.getId(),
         x: player.getX(),
@@ -173,7 +176,7 @@ io.on('connection', (socket) => {
     const updatedGrid = game?.getHiddenGrid();
     const updatedPlayer = game?.getPlayers().get(playerId);
     io.to(gameId).emit('gameState', updatedGrid);
-    io.to(gameId).emit('message', resultMessage);
+    socket.emit('message', resultMessage);
     if (updatedPlayer) {
         io.to(gameId).emit('playerUpdated', {
             id: updatedPlayer.getId(),
@@ -285,7 +288,6 @@ const startTurnTimer = (playerId: string, gameId: string) => {
   if (gameEnded || gameTimeLeft! <= 0) {
     console.log('The game has ended!');
     io.emit('turnTimerUpdate', { playerId, timeLeft: 0 });
-
     return;
   }
   currentPlayerId = playerId;

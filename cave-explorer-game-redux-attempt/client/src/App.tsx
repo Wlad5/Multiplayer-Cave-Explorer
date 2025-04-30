@@ -9,7 +9,6 @@ import { addPlayerAC, movePlayerAC, removePlayerAC, turnPlayerAC, updateScoreAC 
 import { Player } from "./reducers/playerReducer";
 import { StartScreen } from "./components/startScreen/StartScreen";
 
-
 const socket = io('http://localhost:3000');
 
 function App() {
