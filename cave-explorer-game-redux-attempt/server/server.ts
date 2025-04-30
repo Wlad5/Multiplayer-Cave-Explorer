@@ -18,33 +18,31 @@ const io = new Server(httpServer, {
 });
 
 let gameEnded = false;
-let turnTimeLeft = 10000;
-let currentPlayerId: string | null = null;
-let turnTimer: NodeJS.Timeout | null = null;
-let gameTimer: NodeJS.Timeout | null = null;
 const games               = new Map<string, Game>();
 const gameTimers          = new Map<string, NodeJS.Timeout>();
 const gameTimeLeftMap     = new Map<string, number>();
 const turnTimers          = new Map<string, NodeJS.Timeout>();
 const turnTimeLeftMap     = new Map<string, number>();
 const playerGameMap       = new Map<string, string>();
-const currentPlayerMap    = new Map<string, string>();
+const currentPlayerMap    = new Map<string, string | null>();
 const disconnectedPlayers = new Map<string, {gameId: string, x: number, y: number, direction: PlayerDirection, score: number, username: string}>();
 
 io.on('connection', (socket) => {
   socket.on('createGame', ({ username }) => {
     const gameId = v4();
     gameEnded = false;
+    let currentPlayerId = currentPlayerMap.get(gameId);
     currentPlayerId = null;
-    if (turnTimer) {
-      clearInterval(turnTimer);
-      turnTimer = null;
+    if (turnTimers.has(gameId)) {
+      clearInterval(turnTimers.get(gameId));
+      turnTimers.delete(gameId);
     }
-    if (gameTimer) {
-      clearInterval(gameTimer);
-      gameTimer = null;
+    if (gameTimers.has(gameId)) {
+      clearInterval(gameTimers.get(gameId));
+      gameTimers.delete(gameId);
     }
-    turnTimeLeft = 10000;
+
+    turnTimeLeftMap.set(gameId, 10000);
     if (!currentPlayerId) {
       currentPlayerId = socket.id;
       startTurnTimer(currentPlayerId, gameId);
@@ -78,6 +76,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('joinGame', ({ gameId, username }) => {
+    let currentPlayerId = currentPlayerMap.get(gameId);
     if (!games.has(gameId)) {
         socket.emit('error', { message: `Game not found!` });
         return;
@@ -155,6 +154,7 @@ io.on('connection', (socket) => {
   socket.on('playerMove', ({ move, playerId }) => {
     const gameId = playerGameMap.get(socket.id);
     const game = games.get(gameId!);
+    let currentPlayerId = currentPlayerMap.get(gameId!);
     if (!gameId || !games.has(gameId)) {
         socket.emit('error', { message: `You are not in a game!` });
         return;
@@ -171,7 +171,10 @@ io.on('connection', (socket) => {
     if (!game?.getPlayers().has(playerId)) {
         return;
     }
-    clearInterval(turnTimer!);
+    if (turnTimers.has(gameId)) {
+      clearInterval(turnTimers.get(gameId));
+      turnTimers.delete(gameId);
+    }
     const resultMessage = game?.playMove(move, socket.id);
     const updatedGrid = game?.getHiddenGrid();
     const updatedPlayer = game?.getPlayers().get(playerId);
@@ -187,7 +190,7 @@ io.on('connection', (socket) => {
             username: updatedPlayer.getUsername(),
         });
     }
-    nextPlayer();
+    nextPlayer(gameId);
   });
 
   socket.on('leaveGame', () => {
@@ -216,15 +219,16 @@ io.on('connection', (socket) => {
     io.to(gameId).emit('playerLeft', socket.id);
     io.to(gameId).emit('gameState', game?.getHiddenGrid());
     console.log(`Player ${socket.id} left game ${gameId}`);
-    if (currentPlayerId === socket.id) {
-      const players = Array.from(game?.getPlayers().keys() || [])
-      if (players.length > 0) {
-        currentPlayerId = null;
-        nextPlayer();
+    if (currentPlayerMap.get(gameId) === socket.id) {
+      const game = games.get(gameId);
+      if (game?.getPlayers().size! > 0) {
+        nextPlayer(gameId);
       } else {
-        currentPlayerId = null;
-        clearInterval(turnTimer!);
-        turnTimer = null;
+        currentPlayerMap.delete(gameId);
+        if (turnTimers.has(gameId)) {
+          clearInterval(turnTimers.get(gameId)!);
+          turnTimers.delete(gameId);
+        }
       }
     }
     io.emit('activeGames', Array.from(games.keys()));
@@ -250,18 +254,18 @@ io.on('connection', (socket) => {
       console.log(`Player ${socket.id} disconnected from game ${gameId}`);
     }
   
-    if (currentPlayerId === socket.id) {
-      const players = Array.from(game?.getPlayers().keys() || []);
-      if (players.length > 0) {
-        currentPlayerId = null;
-        nextPlayer();
+    if (currentPlayerMap.get(gameId) === socket.id) {
+      const game = games.get(gameId);
+      if (game?.getPlayers().size! > 0) {
+        nextPlayer(gameId);
       } else {
-        currentPlayerId = null;
-        clearInterval(turnTimer!);
-        turnTimer = null;
+        currentPlayerMap.delete(gameId);
+        if (turnTimers.has(gameId)) {
+          clearInterval(turnTimers.get(gameId)!);
+          turnTimers.delete(gameId);
+        }
       }
     }
-  
     io.emit('activeGames', Array.from(games.keys()));
   })
 });
@@ -290,67 +294,45 @@ const startTurnTimer = (playerId: string, gameId: string) => {
     io.emit('turnTimerUpdate', { playerId, timeLeft: 0 });
     return;
   }
-  currentPlayerId = playerId;
-  turnTimeLeft = 10000;
-  io.emit('turnTimerUpdate', { playerId, timeLeft: turnTimeLeft });
-  if (turnTimer) clearInterval(turnTimer);
-  turnTimer = setInterval(() => {
-    turnTimeLeft -= 1000;
-    io.emit('turnTimerUpdate', { playerId, timeLeft: turnTimeLeft });
-    if (turnTimeLeft <= 0) {
-      clearInterval(turnTimer!);
+  currentPlayerMap.set(gameId, playerId);
+  turnTimeLeftMap.set(gameId, 10000);
+  io.to(gameId).emit('turnTimerUpdate', {playerId, timeLeft: 1000})
+
+  if (turnTimers.has(gameId)) clearInterval(turnTimers.get(gameId));
+  const interval = setInterval(() => {
+    const timeLeft = (turnTimeLeftMap.get(gameId) ?? 0) - 1000;
+    turnTimeLeftMap.set(gameId, timeLeft);
+    io.emit('turnTimerUpdate', {playerId, timeLeft});
+    if (timeLeft <= 0) {
+      clearInterval(interval);
+      turnTimers.delete(gameId);
       io.emit('turnMessage', `Player ${playerId} ran out of time!`);
-      nextPlayer();
+      nextPlayer(gameId);
     }
-  }, 1000);
+  }, 1000)
+  turnTimers.set(gameId, interval);
 };
 
-const nextPlayer = () => {
-  if (!currentPlayerId) {
-    console.error("No current player ID!");
-    return;
-  }
+const nextPlayer = (gameId: string) => {
+  const game = games.get(gameId);
+  
+  const players = Array.from(game!.getPlayers().keys());
+  if (players.length === 0) return;
 
-  const gameId = playerGameMap.get(currentPlayerId);
-  if (!gameId) {
-    console.error(`No game found for the current player ID: ${currentPlayerId}`);
-    currentPlayerId = null;
-    return;
-  }
-
-  const currentGame = games.get(gameId);
-  if (!currentGame) {
-    console.error(`Game instance not found for game ID: ${gameId}`);
-    currentPlayerId = null;
-    return;
-  }
-
-  const players = Array.from(currentGame.getPlayers().keys());
-  if (players.length === 0) {
-    console.error(`No players left in the game with ID: ${gameId}`);
-    currentPlayerId = null;
-    clearInterval(turnTimer!);
-    turnTimer = null;
-    return;
-  }
-
-  if (currentPlayerId) {
-    io.emit('turnTimerUpdate', { playerId: currentPlayerId, timeLeft: 0 });
-  }
-
+  const currentPlayerId = currentPlayerMap.get(gameId);
   const currentPlayerIndex = players.indexOf(currentPlayerId ?? '');
   const nextPlayerIndex = currentPlayerIndex >= 0 ? (currentPlayerIndex + 1) % players.length : 0;
   const nextPlayerId = players[nextPlayerIndex];
-  const nextPlayer = currentGame.getPlayers().get(nextPlayerId);
+  const nextPlayer = game!.getPlayers().get(nextPlayerId);
 
-  currentPlayerId = nextPlayerId;
-  io.to(gameId).emit('currentPlayer', { id: currentPlayerId, x: nextPlayer?.getX(), y: nextPlayer?.getY() });
-  io.to(gameId).emit('turnTimerUpdate', { playerId: currentPlayerId, timeLeft: turnTimeLeft });
+  currentPlayerMap.set(gameId, nextPlayerId);
+  io.to(gameId).emit('currentPlayer', { id: nextPlayerId, x: nextPlayer?.getX(), y: nextPlayer?.getY() });
   startTurnTimer(nextPlayerId, gameId);
 };
 
 const endGame = (gameId: string) => {
   const game = games.get(gameId);
+  let currentPlayerId = currentPlayerMap.get(gameId);
   if (!game) {
     console.error(`Game ${gameId} not found!`);
     return;
@@ -360,10 +342,9 @@ const endGame = (gameId: string) => {
     clearInterval(timer);
     gameTimers.delete(gameId);
   }
-  if (turnTimer) {
-    clearInterval(turnTimer);
-    turnTimer = null;
-    turnTimeLeft = 0;
+  if (turnTimers.has(gameId)) {
+    clearInterval(turnTimers.get(gameId));
+    turnTimers.delete(gameId);
   }
 
   const players = Array.from(game.getPlayers().keys());
