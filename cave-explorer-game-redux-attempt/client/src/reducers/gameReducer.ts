@@ -1,4 +1,4 @@
-import { GameActions, START_GAME, EXIT_GAME, END_GAME, SHOW_MESSAGE, ShowMessagePayload, SET_GAME_TIMER, SetGameTimerPayload, SET_TURN_TIMER, SetTurnTimerPayload, SET_MOVE_MADE, SetMoveMadePayload, EndGamePayload, SetCurrentPlayerPayload, SET_CURRENT_PLAYER, SetActiveGamesPayload } from "./gameActions";
+import { GameActions, START_GAME, EXIT_GAME, END_GAME, SHOW_MESSAGE, ShowMessagePayload, SET_GAME_TIMER, SetGameTimerPayload, SET_TURN_TIMER, SetTurnTimerPayload, SET_MOVE_MADE, SetMoveMadePayload, EndGamePayload, SetCurrentPlayerPayload, SET_CURRENT_PLAYER, SetActiveGamesPayload, SET_ACTIVE_GAMES } from "./gameActions";
 
 export interface GameState {
     score: number;
@@ -121,7 +121,7 @@ export const gameReducer = (state: GameState = initialState, action: GameActions
             }
             return state;
         }
-        case 'SET_ACTIVE_GAMES': {
+        case SET_ACTIVE_GAMES: {
             if ('payload' in action) {
                 const {activeGames} = action.payload as SetActiveGamesPayload;
                 return {

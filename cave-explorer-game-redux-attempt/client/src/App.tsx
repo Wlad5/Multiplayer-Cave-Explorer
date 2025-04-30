@@ -40,36 +40,45 @@ function App() {
         dispatch(addPlayerAC(player));
       });
     });
+
     socket.on('playerUpdated', (updatedPlayer) => {
       console.log(`Player updated: ${updatedPlayer}`);
       dispatch(updateScoreAC(updatedPlayer.id, updatedPlayer.score));
-  });
+    });
+
     socket.on('currentPlayer', (playerId) => {
       dispatch(setCurrentPlayerAC(playerId));
     });
+
     socket.on('gameTimeUpdate', (timeLeft) => {
       dispatch(setGameTimerAC(timeLeft));
     })
+
     socket.on('turnTimerUpdate', ({ playerId, timeLeft }) => {
       if (playerId === socket.id) {
         dispatch(setTurnTimerAC(timeLeft));
       }
     });
+
     socket.on('playerRemoved', (playerId: string) => {
       dispatch(removePlayerAC(playerId));
-    })
+    });
+
     socket.on('gameState', (updatedGrid) => {
       dispatch(initializeGridAC(updatedGrid.length, updatedGrid, updatedGrid));
-    })
+    });
+
     socket.on('message', (message) => {
       dispatch(showMessageAC(message));
-    })
+    });
+
     socket.on('gameCreated', (currentPlayerId) => {
       dispatch(setCurrentPlayerAC(currentPlayerId))
-    })
+    });
+
     socket.on('gameEnded', (scores) => {
       dispatch(endGameAC(scores))
-    })
+    });
 
     return () => {
       socket.off('activeGames');
@@ -83,6 +92,7 @@ function App() {
       socket.off('turnTimeUpdate');
     }
   }, [dispatch, players]);
+
   const handleMove = ( move: string) => {
     socket.emit('playerMove', { playerId: socket.id, move });
     switch(move) {
@@ -99,9 +109,11 @@ function App() {
       }
     }
   }
+
   useEffect(() => {
-    const player = players.get(socket.id!);
-    if (player) console.log(`Player score: ${player.score}`);
+    players.forEach((player: Player) => {
+      console.log(`Player ID: ${player.id}, Score: ${player.score}`);
+    });
   }, [players])
 
   const play = () => {
@@ -127,6 +139,8 @@ function App() {
     dispatch(exitGameAC());
     socket.emit('leaveGame', {playerId: socket.id});
   }
+  const playerScore = players.get(socket.id!)?.score || 0;
+  const playerUsername = players.get(socket.id!)?.username || username
 
   return (
     <div className="app">
@@ -147,6 +161,9 @@ function App() {
           <button onClick={() => handleMove('L')}>Left</button>
           <button onClick={() => handleMove('R')}>Right</button>
           <button onClick={() => handleMove('F')}>Forward</button>
+          <div>
+            {`${playerUsername}: ${playerScore}`}
+          </div>
         </>
       )}
     </div>

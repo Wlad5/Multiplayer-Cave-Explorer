@@ -35,7 +35,7 @@ export class Player {
         }
     }
 
-    public moveForward(grid: Grid) {
+    public moveForward(grid: Grid, players: Map<string, Player>) {
         let newX = this.x;
         let newY = this.y;
     
@@ -63,12 +63,29 @@ export class Player {
                 outOfBounds: true,
                 hitObstacle: false,
                 hitTrap: false,
-                foundTreasure: false
+                foundTreasure: false,
+                cellWithAnotherPlayer: false
             };
         }
         const hitTrap = grid.isTrap(newX, newY);
         const foundTreasure = grid.isTreasure(newX, newY);
         const hitObstacle = grid.isObstacle(newX, newY);
+
+        const cellWithAnotherPlayer = Array.from(players.values()).some(
+            (player) => player.getX() === newX && player.getY() === newY && player.getId() !== this.playerId
+        );
+
+        if (cellWithAnotherPlayer) {
+            return {
+                newX,
+                newY,
+                outOfBounds: false,
+                hitObstacle: false,
+                hitTrap: false,
+                foundTreasure: false,
+                cellWithAnotherPlayer: true
+            };
+        }
         
         if (hitObstacle) {
             return {
@@ -76,6 +93,7 @@ export class Player {
                 hitObstacle: true,
                 hitTrap: false,
                 foundTreasure: false,
+                cellWithAnotherPlayer: false
             }
         }
     
@@ -92,7 +110,8 @@ export class Player {
             outOfBounds: false,
             hitObstacle: false,
             hitTrap,
-            foundTreasure
+            foundTreasure,
+            cellWithAnotherPlayer
         };
     }
 

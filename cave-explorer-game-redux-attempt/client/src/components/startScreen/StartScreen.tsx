@@ -28,7 +28,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({play, join, username, s
             {activeGames.length > 0 ? (
                 activeGames.map((game) => (
                     <div key={game}>
-                        <button onClick={() => join(game)}>Join Game {game}</button>
+                        <button onClick={() => join(game)} disabled={!username}>Join Game {game}</button>
                     </div>
                 ))
             ) : (

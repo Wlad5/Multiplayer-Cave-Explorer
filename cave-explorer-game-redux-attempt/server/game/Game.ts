@@ -33,20 +33,21 @@ export class Game {
                 break;
             }
             case "F": {
-                const result = player.moveForward(this.grid);
+                const result = player.moveForward(this.grid, this.players);
                 if (result.outOfBounds) {
                     resultMessage = `Cannot move forward! Out of bounds.`;
                 } else if (result.hitTrap) {
-                    resultMessage = `You hit a trap! Your score is now ${player.getScore()}`;
                     player.subtractScore(10);
-                    console.log(`Player ${player.getId()} has ${player.getScore()} points`)
+                    resultMessage = `You hit a trap! -10 points deducted.`;
+                    console.log(`Player ${player.getId()} has ${player.getScore()} points`);
                 } else if (result.foundTreasure) {
-                    resultMessage = `You found treasure! Your score is now ${player.getScore()}`;
                     player.addScore(5);
-                    console.log(`Player ${player.getId()} has ${player.getScore()} points`)
-
+                    resultMessage = `You found treasure! +5 points added.`;
+                    console.log(`Player ${player.getId()} has ${player.getScore()} points`);
                 } else if (result.hitObstacle) {
                     resultMessage = `There is an obstacle in the way! You cannot move forward.`;
+                } else if (result.cellWithAnotherPlayer) {
+                    resultMessage = `There is another player in the way! You cannot move forward.`;
                 }
                 console.log(prevX, prevY)
                 this.grid.revealLineOfSight(player.getX(), player.getY(), player.getDirection());
