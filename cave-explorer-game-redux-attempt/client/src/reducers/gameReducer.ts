@@ -1,4 +1,5 @@
-import { GameActions, START_GAME, EXIT_GAME, END_GAME, SHOW_MESSAGE, ShowMessagePayload, SET_GAME_TIMER, SetGameTimerPayload, SET_TURN_TIMER, SetTurnTimerPayload, SET_MOVE_MADE, SetMoveMadePayload, EndGamePayload, SetCurrentPlayerPayload, SET_CURRENT_PLAYER, SetActiveGamesPayload, SET_ACTIVE_GAMES } from "./gameActions";
+import { GameActions, START_GAME, EXIT_GAME, END_GAME, SHOW_MESSAGE, ShowMessagePayload, SET_GAME_TIMER, SetGameTimerPayload, SET_TURN_TIMER, SetTurnTimerPayload, SET_MOVE_MADE, SetMoveMadePayload, EndGamePayload, SetCurrentPlayerPayload, SET_CURRENT_PLAYER, SetActiveGamesPayload, SET_ACTIVE_GAMES, AddPlayerToWaitingRoomPayload, ADD_PLAYER_TO_WAITING_ROOM, REMOVE_PLAYER_FROM_WAITING_ROOM, RemovePlayerFromWaitingRoomPayload } from "./gameActions";
+import { Player } from "./playerReducer";
 
 export interface GameState {
     score: number;
@@ -12,6 +13,7 @@ export interface GameState {
     playerMoved: boolean;
     leaderBoard: {playerId: number, score: number}[] | [];
     activeGames: string[] | [];
+    waitingPlayers: Map<string, Player>;
 }
 
 export const initialState: GameState = {
@@ -25,16 +27,18 @@ export const initialState: GameState = {
     currentPlayer: null,
     playerMoved: false,
     leaderBoard: [],
-    activeGames: []
+    activeGames: [],
+    waitingPlayers: new Map<string, Player>()
 }
 
 export const gameReducer = (state: GameState = initialState, action: GameActions): GameState => {
     switch(action.type) {
-        case START_GAME:
+        case START_GAME: {
             return {
                 ...state,
                 gameStatus: 'in_progress'
             }
+        }
         case EXIT_GAME: {
             if (state.gameTimer && state.turnTimer) {
                 clearInterval(state.gameTimer);
@@ -49,7 +53,7 @@ export const gameReducer = (state: GameState = initialState, action: GameActions
                 turnTimeLeft: 0
             }
         }
-        case END_GAME:
+        case END_GAME: {
             if (state.gameTimer && state.turnTimer) {
                 clearInterval(state.gameTimer);
                 clearInterval(state.turnTimer);
@@ -69,6 +73,29 @@ export const gameReducer = (state: GameState = initialState, action: GameActions
                 };
             }
             return state;
+        }
+        case ADD_PLAYER_TO_WAITING_ROOM: {
+            if ('payload' in action) {
+                const {player} = action.payload as AddPlayerToWaitingRoomPayload;
+                return {
+                    ...state,
+                    waitingPlayers: new Map(state.waitingPlayers).set(player.id, player),
+                }
+            }
+            return state;
+        }
+        case REMOVE_PLAYER_FROM_WAITING_ROOM: {
+            if ('payload' in action) {
+                const {player} = action.payload as RemovePlayerFromWaitingRoomPayload;
+                const newWaitingPlayers = new Map(state.waitingPlayers);
+                newWaitingPlayers.delete(player.id);
+                return {
+                    ...state,
+                    waitingPlayers: newWaitingPlayers
+                }
+            }
+            return state;
+        }
         case SHOW_MESSAGE: {
             if ('payload' in action) {
                 const {message} = action.payload as ShowMessagePayload;

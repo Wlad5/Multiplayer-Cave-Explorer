@@ -1,0 +1,17 @@
+.waitingRoom {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .loader {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .waitingPlayers {
+    margin-top: 20px;
+  }
+  
+  .playerUsername {
+    font-weight: bold;
+  }

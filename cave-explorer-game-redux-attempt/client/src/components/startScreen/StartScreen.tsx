@@ -1,38 +1,65 @@
+import { useState } from "react";
 import { Username } from "../username/Username"
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
+import { WaitingRoom } from "../waitingRoom/WaitingRoom";
 
 interface StartScreenProps {
     play: () => void;
-    join: (gameId: string) => void;
+    join: () => void;
+    joinActiveGame: (gameId: string) => void;
     username: string;
     setUsername: (username: string) => void;
     activeGames: string[];
 }
 
-export const StartScreen: React.FC<StartScreenProps> = ({play, join, username, setUsername, activeGames}) => {
-    const onClickHandler = () => {
-        play()
+export const StartScreen: React.FC<StartScreenProps> = ({play, join, joinActiveGame, username, setUsername, activeGames}) => {
+    const [showWaitingRoom, setShowWaitingRoom] = useState(false);
+    const waitingPlayers = useSelector((state: RootState) => state.game.waitingPlayers);
+    
+    const handleJoinActiveGame = (gameId: string) => {
+        if (username.trim()) {
+            joinActiveGame(gameId);
+        } else {
+            console.error("Please enter a valid username.");
+        }
     }
+
+    const handleJoinClick = () => {
+        if (username.trim()) {
+            join()
+            setShowWaitingRoom(true);
+        } else {
+            console.error("Please enter a valid username.");
+        }
+    };
     return (
         <div>
-            <h1>Prepare for Treasure Hunt!</h1>
-            <Username
-                username={username}
-                setUsername={setUsername}
-            />
-            <button
-                onClick={onClickHandler}
-                disabled={username === ''}
-            >
-                Start
-            </button>
-            {activeGames.length > 0 ? (
-                activeGames.map((game) => (
-                    <div key={game}>
-                        <button onClick={() => join(game)} disabled={!username}>Join Game {game}</button>
-                    </div>
-                ))
+            {showWaitingRoom ? (
+                <WaitingRoom players={waitingPlayers} />
             ) : (
-            <p>No active games available</p>
+                <>
+                    <h1>Prepare for Treasure Hunt!</h1>
+                    <Username username={username} setUsername={setUsername} />
+                    <button onClick={play} disabled={username === ""}>
+                        Start
+                    </button>
+                    <button onClick={handleJoinClick} disabled={!username}>
+                        Join Game
+                    </button>
+                    {activeGames.length > 0 && (
+                        <div className="active-games">
+                            <h2>Active Games:</h2>
+                            <ul>
+                                {activeGames.map((gameId) => (
+                                    <li key={gameId}>
+                                        <button onClick={() => handleJoinActiveGame(gameId)}>{gameId}</button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                </>
             )}
         </div>
     )

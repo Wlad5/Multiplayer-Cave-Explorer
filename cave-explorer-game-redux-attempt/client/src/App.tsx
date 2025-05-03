@@ -3,7 +3,7 @@ import { AppDispatch, RootState } from "./store";
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { initializeGridAC } from "./reducers/gridActions";
-import { endGameAC, exitGameAC, setActiveGamesAC, setCurrentPlayerAC, setGameTimerAC, setTurnTimerAC, showMessageAC, startGameAC } from "./reducers/gameActions";
+import { addPlayerToWaitingRoomAC, endGameAC, exitGameAC, removePlayerFromWaitingRoomAC, setActiveGamesAC, setCurrentPlayerAC, setGameTimerAC, setTurnTimerAC, showMessageAC, startGameAC } from "./reducers/gameActions";
 import Gameboard from "./components/gameBoard/GameBoard";
 import { addPlayerAC, movePlayerAC, removePlayerAC, turnPlayerAC, updateScoreAC } from "./reducers/playerActions";
 import { Player } from "./reducers/playerReducer";
@@ -21,9 +21,19 @@ function App() {
   const message = useSelector((state: RootState) => state.game.message);
   const gameTimeLeft = useSelector((state: RootState) => state.game.gameTimeLeft);
   const turnTimeLeft = useSelector((state: RootState) => state.game.turnTimeLeft);
+  const waitingPlayers = useSelector((state: RootState) => state.game.waitingPlayers);
 
   useEffect(() => {
 
+    socket.on('waitingPlayers', (player) => {
+      dispatch(addPlayerToWaitingRoomAC(player));
+    });
+
+    socket.on('gameJoined', ({gameId}) => {
+      console.log(`Joined game: ${gameId}`);
+      dispatch(startGameAC());
+    })
+    
     socket.on('activeGames', (activeGames: string[]) => {
       dispatch(setActiveGamesAC(activeGames));
     })
@@ -73,10 +83,14 @@ function App() {
 
     socket.on('gameCreated', (currentPlayerId) => {
       dispatch(setCurrentPlayerAC(currentPlayerId))
+      dispatch(startGameAC());
     });
 
     socket.on('gameEnded', (scores) => {
-      dispatch(endGameAC(scores))
+      dispatch(endGameAC(scores));
+      Array.from(waitingPlayers.values()).forEach((playerId) => {
+        dispatch(removePlayerFromWaitingRoomAC(playerId));
+      })
     });
 
     return () => {
@@ -86,11 +100,20 @@ function App() {
       socket.off('playerUpdated');
       socket.off('currentPlayer');
       socket.off('gameState');
+      socket.off('playerAddedToWaitingRoom');
       socket.off('message');
+      socket.off('gameJoined');
       socket.off('gameTimeUpdate');
       socket.off('turnTimeUpdate');
+      socket.off('waitingPlayers');
     }
-  }, [dispatch, players]);
+  }, [dispatch]);
+  
+  useEffect(() => {
+    players.forEach((player: Player) => {
+      console.log(`Player ID: ${player.id}, Score: ${player.score}`);
+    });
+  }, [players])
 
   const handleMove = ( move: string) => {
     socket.emit('playerMove', { playerId: socket.id, move });
@@ -109,26 +132,34 @@ function App() {
     }
   }
 
-  useEffect(() => {
-    players.forEach((player: Player) => {
-      console.log(`Player ID: ${player.id}, Score: ${player.score}`);
-    });
-  }, [players])
-
   const play = () => {
     if (username.trim()) {
       socket.emit('createGame', {username});
       dispatch(startGameAC());
       dispatch(setCurrentPlayerAC(socket.id!));
+      Array.from(waitingPlayers.values()).forEach((playerId) => {
+        dispatch(removePlayerFromWaitingRoomAC(playerId));
+      });
     } else {
       alert(`Please enter a username!`);
     }
   }
 
-  const joinGame = (gameId: string) => {
+  const join = () => {
     if (username.trim()) {
-      socket.emit('joinGame', {username, gameId});
-      dispatch(startGameAC());
+      socket.emit('waitingRoom', {username});
+      Array.from(waitingPlayers.values()).forEach((playerId) => {
+        dispatch(removePlayerFromWaitingRoomAC(playerId));
+      })
+    } else {
+      alert(`Please enter a username!`);
+    }
+  }
+
+  const joinActiveGame = (gameId: string) => {
+    if (username.trim()) {
+      socket.emit('joinActiveGame', {gameId, username});
+      dispatch(startGameAC())
     } else {
       alert(`Please enter a username!`);
     }
@@ -146,7 +177,8 @@ function App() {
       {gameStatus === 'not_started' || gameStatus === 'ended' ? (
         <StartScreen
           play={play}
-          join={joinGame}
+          join={join}
+          joinActiveGame={joinActiveGame}
           username={username}
           setUsername={setUsername}
           activeGames={activeGames}
