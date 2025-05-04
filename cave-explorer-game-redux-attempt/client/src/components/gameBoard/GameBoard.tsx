@@ -7,10 +7,9 @@ interface GameBoardProps {
 }
 
 export const GameBoard: React.FC<GameBoardProps> = ({ exit }) => {
-  const hiddenGrid = useSelector((state: RootState) => state.grid.hiddenGrid);
+  const hiddenGrid    = useSelector((state: RootState) => state.grid.hiddenGrid);
   const currentPlayer = useSelector((state: RootState) => state.game.currentPlayer) as { x: number; y: number } | null;
   
-
   const renderGrid = () => {
     return hiddenGrid.map((row, rowIndex) => (
       <div key={rowIndex} className="row">

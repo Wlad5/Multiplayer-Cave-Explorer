@@ -1,4 +1,12 @@
-import { EMPTY_CELL, GRID_SIZE, HIDDEN_CELL, OBSTACLE, PlayerDirection, TRAP, TREASURE } from "./constants";
+import { 
+    EMPTY_CELL,
+    GRID_SIZE,
+    HIDDEN_CELL,
+    OBSTACLE,
+    PlayerDirection,
+    TRAP,
+    TREASURE 
+} from "./constants";
 
 export class Grid {
     public grid: string[][] = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(EMPTY_CELL));
@@ -17,12 +25,10 @@ export class Grid {
             attempts++;
         }
     }
-
     public revealCurrentCell(playerX: number, playerY: number, playerDirection: PlayerDirection): void {
         this.grid[playerX][playerY] = playerDirection;
         this.hiddenGrid[playerX][playerY] = playerDirection;
     }
-
     public revealLineOfSight(playerX: number, playerY: number, playerDirection: PlayerDirection): void {
         let nextX = playerX;
         let nextY = playerY;
@@ -53,6 +59,39 @@ export class Grid {
                 break;
             }
         }
+    }
+    public moveObstacles(): void {
+        const newGrid = this.grid.map(row => [...row]);
+        for (let i = 0; i < GRID_SIZE; i++) {
+            for (let j = 0; j < GRID_SIZE; j++) {
+                if (this.grid[i][j] === OBSTACLE) {
+                    const direction = Math.floor(Math.random() * 4);
+                    let newX = i;
+                    let newY = j;
+                    switch (direction) {
+                        case 0: newX--; break;
+                        case 1: newY++; break;
+                        case 2: newX++; break;
+                        case 3: newY--; break;
+                    }
+                    if (!this.isOutOfBounds(newX, newY) && this.isEmpty(newX, newY)) {
+                        newGrid[newX][newY] = OBSTACLE;
+                        newGrid[i][j] = EMPTY_CELL;
+                    }
+                }
+            }
+        }
+        this.grid = newGrid;
+        for (let i = 0; i < GRID_SIZE; i++) {
+            for (let j = 0; j < GRID_SIZE; j++) {
+                if (this.hiddenGrid[i][j] !== HIDDEN_CELL) {
+                    this.hiddenGrid[i][j] = this.grid[i][j];
+                }
+            }
+        }
+    }
+    public isEmpty(x:number, y: number): boolean {
+        return this.grid[x][y] === EMPTY_CELL;
     }
     public isObstacle(x: number, y: number): boolean {
         return this.grid[x][y] === OBSTACLE;

@@ -118,23 +118,18 @@ export class Player {
     public addScore(points: number): void {
         this.score += points;
     }
-
     public subtractScore(points: number): void {
         this.score -= points;
     }
-
     public getScore(): number {
         return this.score;
     }
-
     public getDirection(): PlayerDirection {
         return this.playerDirection;
     }
-
     public getX(): number {
         return this.x;
     }
-
     public getY(): number {
         return this.y;
     }

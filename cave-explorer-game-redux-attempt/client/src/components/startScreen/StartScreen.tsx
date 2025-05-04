@@ -16,7 +16,7 @@ interface StartScreenProps {
 
 export const StartScreen: React.FC<StartScreenProps> = ({play, join, joinActiveGame, username, setUsername, activeGames, leaveWaitingRoom}) => {
     const [showWaitingRoom, setShowWaitingRoom] = useState(false);
-    const waitingPlayers = useSelector((state: RootState) => state.game.waitingPlayers);
+    const waitingPlayers                        = useSelector((state: RootState) => state.game.waitingPlayers);
     
     const handleJoinActiveGame = (gameId: string) => {
         if (username.trim()) {
@@ -29,7 +29,6 @@ export const StartScreen: React.FC<StartScreenProps> = ({play, join, joinActiveG
         leaveWaitingRoom();
         setShowWaitingRoom(false);
     }
-
     const handleJoinClick = () => {
         if (username.trim()) {
             join()

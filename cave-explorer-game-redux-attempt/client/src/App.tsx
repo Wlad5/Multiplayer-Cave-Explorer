@@ -3,9 +3,25 @@ import { AppDispatch, RootState } from "./store";
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { initializeGridAC } from "./reducers/gridActions";
-import { endGameAC, exitGameAC, setActiveGamesAC, setCurrentPlayerAC, setGameTimerAC, setTurnTimerAC, setWaitingPlayersAC, showMessageAC, startGameAC } from "./reducers/gameActions";
+import { 
+  endGameAC,
+  exitGameAC,
+  setActiveGamesAC,
+  setCurrentPlayerAC,
+  setGameTimerAC,
+  setTurnTimerAC,
+  setWaitingPlayersAC,
+  showMessageAC,
+  startGameAC 
+} from "./reducers/gameActions";
 import Gameboard from "./components/gameBoard/GameBoard";
-import { addPlayerAC, movePlayerAC, removePlayerAC, turnPlayerAC, updateScoreAC } from "./reducers/playerActions";
+import { 
+  addPlayerAC,
+  movePlayerAC,
+  removePlayerAC,
+  turnPlayerAC,
+  updateScoreAC 
+} from "./reducers/playerActions";
 import { Player } from "./reducers/playerReducer";
 import { StartScreen } from "./components/startScreen/StartScreen";
 
@@ -13,15 +29,15 @@ const socket = io('http://localhost:3000');
 
 function App() {
   const dispatch: AppDispatch     = useDispatch();
-  const [username, setUsername] = useState('');
-  const gameStatus = useSelector((state: RootState) => state.game.gameStatus);
-  const activeGames = useSelector((state: RootState) => state.game.activeGames);
-  const grid = useSelector((state: RootState) => state.grid.grid);
-  const players = useSelector((state: RootState) => state.player);
-  const message = useSelector((state: RootState) => state.game.message);
-  const gameTimeLeft = useSelector((state: RootState) => state.game.gameTimeLeft);
-  const turnTimeLeft = useSelector((state: RootState) => state.game.turnTimeLeft);
-  const waitingPlayers = useSelector((state: RootState) => state.game.waitingPlayers);
+  const [username, setUsername]   = useState('');
+  const gameStatus                = useSelector((state: RootState) => state.game.gameStatus);
+  const activeGames               = useSelector((state: RootState) => state.game.activeGames);
+  const grid                      = useSelector((state: RootState) => state.grid.grid);
+  const players                   = useSelector((state: RootState) => state.player);
+  const message                   = useSelector((state: RootState) => state.game.message);
+  const gameTimeLeft              = useSelector((state: RootState) => state.game.gameTimeLeft);
+  const turnTimeLeft              = useSelector((state: RootState) => state.game.turnTimeLeft);
+  const waitingPlayers            = useSelector((state: RootState) => state.game.waitingPlayers);
 
   useEffect(() => {
 

@@ -14,7 +14,6 @@ export class Game {
         this.grid.placeRandomItems(OBSTACLE, 7);
         this.players.forEach((player) => this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection()));
     }
-
     public playMove(move: string, playerId: string): string {
         const player = this.players.get(playerId);
         if (!player) {
@@ -65,7 +64,6 @@ export class Game {
         this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection());
         return resultMessage;
     }
-
     public addPlayer(playerId: string, username: string): void {
         console.log(`Adding player with ID: ${playerId}`);
         if (this.players.has(playerId)) {
@@ -100,14 +98,12 @@ export class Game {
             this.players.delete(playerId);
         }
     }
-
     public getGrid() {
-        return this.grid.grid;
+        return this.grid;
     }
     public getHiddenGrid() {
         return this.grid.hiddenGrid;
     }
-
     public getPlayers() {
         return this.players;
     }

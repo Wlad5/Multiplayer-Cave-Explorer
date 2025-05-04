@@ -5,10 +5,10 @@ import { Game } from './game/Game';
 import { v4 } from 'uuid';
 import { EMPTY_CELL, PlayerDirection } from './game/constants';
 import { Player } from './game/Player';
+import { clear } from 'console';
 
 const app = express();
 const port = 3000;
-
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
@@ -16,13 +16,13 @@ const io = new Server(httpServer, {
     methods: ["GET", "POST"],
   },
 });
-
 const MIN_PLAYERS = 3;
 const games               = new Map<string, Game>();
 const gameTimers          = new Map<string, NodeJS.Timeout>();
 const gameTimeLeftMap     = new Map<string, number>();
 const turnTimers          = new Map<string, NodeJS.Timeout>();
 const turnTimeLeftMap     = new Map<string, number>();
+const obstacleMovementTimersMap = new Map<string, NodeJS.Timeout>();
 const waitingPlayersMap   = new Map<string, Player>();
 const playerGameMap       = new Map<string, string>();
 const currentPlayerMap    = new Map<string, string | null>();
@@ -53,6 +53,7 @@ io.on('connection', (socket) => {
     }
     const newGame = new Game();
     startGameTimer(gameId);
+    startObstacleMovementTimer(gameId);
     games.set(gameId, newGame);
     playerGameMap.set(socket.id, gameId);
     newGame.addPlayer(socket.id, username);
@@ -149,7 +150,7 @@ io.on('connection', (socket) => {
     socket.join(gameId);
     const player = game.getPlayers().get(socket.id);
     if (player) {
-      game.getGrid()[player.getX()][player.getY()] = player.getDirection();
+      game.getGrid().grid[player.getX()][player.getY()] = player.getDirection();
       game.getHiddenGrid()[player.getX()][player.getY()] = player.getDirection();
     }
     const newPlayer = game.getPlayers().get(socket.id);
@@ -274,7 +275,7 @@ io.on('connection', (socket) => {
         username: player.getUsername(),
       })
       game?.removePlayer(socket.id);
-      game!.getGrid()[player.getX()][player.getY()] = EMPTY_CELL;
+      game!.getGrid().grid[player.getX()][player.getY()] = EMPTY_CELL;
       game!.getHiddenGrid()[player.getX()][player.getY()] = EMPTY_CELL;
     }
     playerGameMap.delete(socket.id);
@@ -323,7 +324,7 @@ io.on('connection', (socket) => {
   
     if (player) {
       game?.removePlayer(socket.id);
-      game!.getGrid()[player.getX()][player.getY()] = EMPTY_CELL;
+      game!.getGrid().grid[player.getX()][player.getY()] = EMPTY_CELL;
       game!.getHiddenGrid()[player.getX()][player.getY()] = EMPTY_CELL;
       playerGameMap.delete(socket.id);
       socket.leave(gameId);
@@ -424,6 +425,11 @@ const endGame = (gameId: string) => {
     clearInterval(turnTimers.get(gameId));
     turnTimers.delete(gameId);
   }
+  if (obstacleMovementTimersMap.has(gameId)) {
+    clearInterval(obstacleMovementTimersMap.get(gameId)!);
+    obstacleMovementTimersMap.delete(gameId);
+  }
+
 
   const players = Array.from(game.getPlayers().keys());
   players.forEach(playerId => {
@@ -447,6 +453,21 @@ const endGame = (gameId: string) => {
   console.log(`Game ${gameId} deleted!`);
   io.emit('activeGames', Array.from(games.keys()));
 };
+
+const startObstacleMovementTimer = (gameId: string) => {
+  if (obstacleMovementTimersMap.has(gameId)) return;
+  const interval = setInterval(() => {
+    const game = games.get(gameId);
+    if (!game) {
+      clearInterval(interval);
+      obstacleMovementTimersMap.delete(gameId);
+      return;
+    }
+    game.getGrid().moveObstacles();
+    io.to(gameId).emit('gameState', game.getHiddenGrid());
+  }, 5000);
+  obstacleMovementTimersMap.set(gameId, interval);
+}
 
 httpServer.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
