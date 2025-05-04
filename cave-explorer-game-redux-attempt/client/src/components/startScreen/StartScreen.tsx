@@ -11,9 +11,10 @@ interface StartScreenProps {
     username: string;
     setUsername: (username: string) => void;
     activeGames: string[];
+    leaveWaitingRoom: () => void;
 }
 
-export const StartScreen: React.FC<StartScreenProps> = ({play, join, joinActiveGame, username, setUsername, activeGames}) => {
+export const StartScreen: React.FC<StartScreenProps> = ({play, join, joinActiveGame, username, setUsername, activeGames, leaveWaitingRoom}) => {
     const [showWaitingRoom, setShowWaitingRoom] = useState(false);
     const waitingPlayers = useSelector((state: RootState) => state.game.waitingPlayers);
     
@@ -23,6 +24,10 @@ export const StartScreen: React.FC<StartScreenProps> = ({play, join, joinActiveG
         } else {
             console.error("Please enter a valid username.");
         }
+    }
+    const handleLeaveWaitingRoom = () => {
+        leaveWaitingRoom();
+        setShowWaitingRoom(false);
     }
 
     const handleJoinClick = () => {
@@ -36,7 +41,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({play, join, joinActiveG
     return (
         <div>
             {showWaitingRoom ? (
-                <WaitingRoom players={waitingPlayers} />
+                <WaitingRoom players={waitingPlayers} leaveWaitingRoom={handleLeaveWaitingRoom}/>
             ) : (
                 <>
                     <h1>Prepare for Treasure Hunt!</h1>

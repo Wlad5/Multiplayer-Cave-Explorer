@@ -191,17 +191,17 @@ io.on('connection', (socket) => {
     const player = new Player(socket.id, username);
     waitingPlayersMap.set(socket.id, player);
     socket.join(socket.id);
-    waitingPlayersMap.forEach((value, key) => {
-      console.log(key, {
-        x: value.getX(),
-        y: value.getY(),
-        playerDirection: value.getDirection(),
-        score: value.getScore(),
-        playerId: value.getId(),
-        username: value.getUsername(),
-      });
-    });
-    io.emit('waitingPlayers', { id: socket.id, username });
+    // waitingPlayersMap.forEach((value, key) => {
+    //   console.log('waiting players', key, {
+    //     x: value.getX(),
+    //     y: value.getY(),
+    //     playerDirection: value.getDirection(),
+    //     score: value.getScore(),
+    //     playerId: value.getId(),
+    //     username: value.getUsername(),
+    //   });
+    // });
+    io.emit('waitingPlayers', Array.from(waitingPlayersMap.entries()) );
   })
 
   socket.on('listGames', () => {
@@ -247,6 +247,15 @@ io.on('connection', (socket) => {
     nextPlayer(gameId);
   });
 
+  socket.on('leaveWaitingRoom', ({playerId}) => {
+    if (waitingPlayersMap.has(playerId)) {
+      waitingPlayersMap.delete(playerId);
+      socket.leave(playerId);
+      io.emit('waitingPlayers', Array.from(waitingPlayersMap.entries()));
+      console.log(`Player ${playerId} left the waiting room!`);
+    }
+  })
+
   socket.on('leaveGame', () => {
     const gameId = playerGameMap.get(socket.id);
     if (!gameId || !games.has(gameId)) {
@@ -289,6 +298,21 @@ io.on('connection', (socket) => {
   })
 
   socket.on('disconnect', () => {
+    if (waitingPlayersMap.has(socket.id)) {
+      waitingPlayersMap.delete(socket.id);
+      io.emit('waitingPlayers', Array.from(waitingPlayersMap.entries()));
+    }
+    // waitingPlayersMap.forEach((value, key) => {
+    //   console.log('waiting players', key, {
+    //     x: value.getX(),
+    //     y: value.getY(),
+    //     playerDirection: value.getDirection(),
+    //     score: value.getScore(),
+    //     playerId: value.getId(),
+    //     username: value.getUsername(),
+    //   });
+    // });
+
     const gameId = playerGameMap.get(socket.id);
     if (!gameId || !games.has(gameId)) {
       return;

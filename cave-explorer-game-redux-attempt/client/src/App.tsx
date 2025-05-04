@@ -3,7 +3,7 @@ import { AppDispatch, RootState } from "./store";
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { initializeGridAC } from "./reducers/gridActions";
-import { addPlayerToWaitingRoomAC, endGameAC, exitGameAC, removePlayerFromWaitingRoomAC, setActiveGamesAC, setCurrentPlayerAC, setGameTimerAC, setTurnTimerAC, showMessageAC, startGameAC } from "./reducers/gameActions";
+import { endGameAC, exitGameAC, setActiveGamesAC, setCurrentPlayerAC, setGameTimerAC, setTurnTimerAC, setWaitingPlayersAC, showMessageAC, startGameAC } from "./reducers/gameActions";
 import Gameboard from "./components/gameBoard/GameBoard";
 import { addPlayerAC, movePlayerAC, removePlayerAC, turnPlayerAC, updateScoreAC } from "./reducers/playerActions";
 import { Player } from "./reducers/playerReducer";
@@ -25,8 +25,9 @@ function App() {
 
   useEffect(() => {
 
-    socket.on('waitingPlayers', (player) => {
-      dispatch(addPlayerToWaitingRoomAC(player));
+    socket.on('waitingPlayers', (waitingPlayers) => {
+      const playersMap = new Map<string, Player>(waitingPlayers);
+      dispatch(setWaitingPlayersAC(playersMap));
     });
 
     socket.on('gameJoined', ({gameId}) => {
@@ -61,7 +62,7 @@ function App() {
 
     socket.on('gameTimeUpdate', (timeLeft) => {
       dispatch(setGameTimerAC(timeLeft));
-    })
+    });
 
     socket.on('turnTimerUpdate', ({ playerId, timeLeft }) => {
       if (playerId === socket.id) {
@@ -88,9 +89,7 @@ function App() {
 
     socket.on('gameEnded', (scores) => {
       dispatch(endGameAC(scores));
-      Array.from(waitingPlayers.values()).forEach((playerId) => {
-        dispatch(removePlayerFromWaitingRoomAC(playerId));
-      })
+      dispatch(setWaitingPlayersAC(waitingPlayers));
     });
 
     return () => {
@@ -107,7 +106,7 @@ function App() {
       socket.off('turnTimeUpdate');
       socket.off('waitingPlayers');
     }
-  }, [dispatch]);
+  }, [dispatch, waitingPlayers]);
   
   useEffect(() => {
     players.forEach((player: Player) => {
@@ -137,9 +136,6 @@ function App() {
       socket.emit('createGame', {username});
       dispatch(startGameAC());
       dispatch(setCurrentPlayerAC(socket.id!));
-      Array.from(waitingPlayers.values()).forEach((playerId) => {
-        dispatch(removePlayerFromWaitingRoomAC(playerId));
-      });
     } else {
       alert(`Please enter a username!`);
     }
@@ -148,9 +144,8 @@ function App() {
   const join = () => {
     if (username.trim()) {
       socket.emit('waitingRoom', {username});
-      Array.from(waitingPlayers.values()).forEach((playerId) => {
-        dispatch(removePlayerFromWaitingRoomAC(playerId));
-      })
+      const playersMap = new Map<string, Player>(waitingPlayers);
+      dispatch(setWaitingPlayersAC(playersMap));
     } else {
       alert(`Please enter a username!`);
     }
@@ -163,6 +158,12 @@ function App() {
     } else {
       alert(`Please enter a username!`);
     }
+  }
+
+  const leaveWaitingRoom = () => {
+    socket.emit('leaveWaitingRoom', {playerId: socket.id});
+    const playerMap = new Map<string, Player>(waitingPlayers);
+    dispatch(setWaitingPlayersAC(playerMap));
   }
 
   const exitGame = () => {
@@ -182,6 +183,7 @@ function App() {
           username={username}
           setUsername={setUsername}
           activeGames={activeGames}
+          leaveWaitingRoom={leaveWaitingRoom}
         />
       ) : (
         <>

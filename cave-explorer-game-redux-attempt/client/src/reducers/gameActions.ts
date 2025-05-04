@@ -4,8 +4,7 @@ export const START_GAME     = 'START_GAME';
 export const END_GAME       = 'END_GAME';
 export const SHOW_MESSAGE   = 'SHOW_MESSAGE';
 export const EXIT_GAME      = 'EXIT_GAME';
-export const ADD_PLAYER_TO_WAITING_ROOM = 'ADD_PLAYER_TO_WAITING_ROOM';
-export const REMOVE_PLAYER_FROM_WAITING_ROOM = 'REMOVE_PLAYER_FROM_WAITING_ROOM';
+export const SET_WAITING_PLAYERS = 'SET_WAITING_PLAYERS';
 export const SET_CURRENT_PLAYER = 'SET_CURRENT_PLAYER';
 export const SET_GAME_TIMER = 'SET_GAME_TIMER';
 export const SET_TURN_TIMER = 'SET_TURN_TIMER';
@@ -42,12 +41,8 @@ export interface SetActiveGamesPayload {
     activeGames: string[];
 }
 
-export interface AddPlayerToWaitingRoomPayload {
-    player: Player;
-}
-
-export interface RemovePlayerFromWaitingRoomPayload {
-    player: Player;
+export interface SetWaitingPlayersPayload {
+    waitingPlayers: Map<string, Player>
 }
 
 export const startGameAC = () => ({
@@ -72,17 +67,10 @@ export const showMessageAC = (message: string) => ({
     }
 })
 
-export const addPlayerToWaitingRoomAC = (player: Player) => ({
-    type: ADD_PLAYER_TO_WAITING_ROOM,
+export const setWaitingPlayersAC = (waitingPlayers: Map<string, Player>) => ({
+    type: SET_WAITING_PLAYERS,
     payload: {
-        player
-    }
-})
-
-export const removePlayerFromWaitingRoomAC = (player: Player) => ({
-    type: REMOVE_PLAYER_FROM_WAITING_ROOM,
-    payload: {
-        player
+        waitingPlayers
     }
 })
 
@@ -125,8 +113,7 @@ export type StartGame       = ReturnType<typeof startGameAC>
 export type ExitGame        = ReturnType<typeof exitGameAC>
 export type EndGame         = ReturnType<typeof endGameAC>
 export type ShowMessage     = ReturnType<typeof showMessageAC>
-export type AddPlayerToWaitingRoom = ReturnType<typeof addPlayerToWaitingRoomAC>
-export type RemovePlayerFromWaitingRoom = ReturnType<typeof removePlayerFromWaitingRoomAC>
+export type SetWaitingPlayers = ReturnType<typeof setWaitingPlayersAC>
 export type SetGameTimer    = ReturnType<typeof setGameTimerAC>
 export type SetTurnTimer    = ReturnType<typeof setTurnTimerAC>
 export type SetMoveMade     = ReturnType<typeof setMoveMadeAC>
@@ -136,8 +123,7 @@ export type GameActions     =
     | StartGame
     | ExitGame
     | EndGame
-    | AddPlayerToWaitingRoom
-    | RemovePlayerFromWaitingRoom
+    | SetWaitingPlayers
     | SetCurrentPlayer
     | ShowMessage
     | SetGameTimer

@@ -1,21 +1,26 @@
+import { Player } from "../../reducers/playerReducer";
+
 export interface WaitingRoomProps {
-    players: Map<string, {username: string}>;    
+    players: Map<string, Player>;
+    leaveWaitingRoom: () => void;   
 }
 
-export const WaitingRoom = ({players}: WaitingRoomProps)  => {
-    console.log('Waiting players:', Array.from(players.values()));
+export const WaitingRoom = ({ players, leaveWaitingRoom }: WaitingRoomProps) => {
+    const playersArray = Array.from(players.values());
+    
     return (
-        <div className={'waiting-room'}>
-            <div className={'loader'}>Loader</div>
-            <div className={'waiting-players'}>
-                <ul>
-                    {Array.from(players.values()).map((player, index) => (
-                        <li key={index}>
-                            <span className={'player-username'}>{player.username}</span>
-                        </li>
-                    ))}
-                </ul>
-            </div>
+      <div className={'waiting-room'}>
+        <button onClick={leaveWaitingRoom}>X</button>
+        <div className={'loader'}>Loader</div>
+        <div className={'waiting-players'}>
+          <ul>
+            {playersArray.map((player, index) => (
+              <li key={index}>
+                <span className={'playerUsername'}>{player.username}</span>
+              </li>
+            ))}
+          </ul>
         </div>
-    )
-}
+      </div>
+    );
+  };

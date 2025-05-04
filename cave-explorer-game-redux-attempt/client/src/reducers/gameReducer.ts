@@ -1,4 +1,24 @@
-import { GameActions, START_GAME, EXIT_GAME, END_GAME, SHOW_MESSAGE, ShowMessagePayload, SET_GAME_TIMER, SetGameTimerPayload, SET_TURN_TIMER, SetTurnTimerPayload, SET_MOVE_MADE, SetMoveMadePayload, EndGamePayload, SetCurrentPlayerPayload, SET_CURRENT_PLAYER, SetActiveGamesPayload, SET_ACTIVE_GAMES, AddPlayerToWaitingRoomPayload, ADD_PLAYER_TO_WAITING_ROOM, REMOVE_PLAYER_FROM_WAITING_ROOM, RemovePlayerFromWaitingRoomPayload } from "./gameActions";
+import { 
+    GameActions,
+    START_GAME,
+    EXIT_GAME,
+    END_GAME,
+    SHOW_MESSAGE,
+    ShowMessagePayload,
+    SET_GAME_TIMER,
+    SetGameTimerPayload,
+    SET_TURN_TIMER,
+    SetTurnTimerPayload,
+    SET_MOVE_MADE,
+    SetMoveMadePayload,
+    EndGamePayload,
+    SetCurrentPlayerPayload,
+    SET_CURRENT_PLAYER,
+    SetActiveGamesPayload,
+    SET_ACTIVE_GAMES,
+    SetWaitingPlayersPayload,
+    SET_WAITING_PLAYERS
+} from "./gameActions";
 import { Player } from "./playerReducer";
 
 export interface GameState {
@@ -74,24 +94,12 @@ export const gameReducer = (state: GameState = initialState, action: GameActions
             }
             return state;
         }
-        case ADD_PLAYER_TO_WAITING_ROOM: {
+        case SET_WAITING_PLAYERS: {
             if ('payload' in action) {
-                const {player} = action.payload as AddPlayerToWaitingRoomPayload;
+                const {waitingPlayers} = action.payload as SetWaitingPlayersPayload;
                 return {
                     ...state,
-                    waitingPlayers: new Map(state.waitingPlayers).set(player.id, player),
-                }
-            }
-            return state;
-        }
-        case REMOVE_PLAYER_FROM_WAITING_ROOM: {
-            if ('payload' in action) {
-                const {player} = action.payload as RemovePlayerFromWaitingRoomPayload;
-                const newWaitingPlayers = new Map(state.waitingPlayers);
-                newWaitingPlayers.delete(player.id);
-                return {
-                    ...state,
-                    waitingPlayers: newWaitingPlayers
+                    waitingPlayers: waitingPlayers
                 }
             }
             return state;
