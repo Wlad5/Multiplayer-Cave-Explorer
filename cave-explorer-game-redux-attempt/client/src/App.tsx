@@ -233,31 +233,44 @@ function App() {
 
   return (
     <div className="app">
-      {gameStatus === 'not_started' || gameStatus === 'ended' ? (
-        <StartScreen
-          play={play}
-          join={join}
-          joinActiveGame={joinActiveGame}
-          username={username}
-          setUsername={setUsername}
-          activeGames={activeGames}
-          leaveWaitingRoom={leaveWaitingRoom}
-        />
-      ) : (
-        <>
-          <div>Game Time Left: {gameTimeLeft / 1000}s</div>
-          <div>Turn Time Left: {turnTimeLeft / 1000}s</div>
-          <div>It is {currentPlayerUsername}'s turn!</div>
-          <Gameboard exit={exitGame}/>
-          {message && <div className="message">{message}</div>}
-          <Controls handleInput={handleInput} />
-          <div>
-            {`${playerUsername}: ${playerScore}`}
-            {`Trap Immunity: ${playerTrapImmunity}`}
-          </div>
-        </>
-      )}
+        {gameStatus === 'not_started' || gameStatus === 'ended' ? (
+            <StartScreen
+                play={play}
+                join={join}
+                joinActiveGame={joinActiveGame}
+                username={username}
+                setUsername={setUsername}
+                activeGames={activeGames}
+                leaveWaitingRoom={leaveWaitingRoom}
+            />
+        ) : (
+            <>
+                <div className="timers">
+                    <div>Game Time Left: {gameTimeLeft / 1000}s</div>
+                    <div>Turn Time Left: {turnTimeLeft / 1000}s</div>
+                </div>
+
+                <div className="current-player-info">
+                    It is {currentPlayerUsername}'s turn!
+                </div>
+
+                <div className="game-board-container">
+                    <Gameboard exit={exitGame} />
+                </div>
+
+                {message && <div className="message-area">{message}</div>}
+
+                <div className="controls-container">
+                    <Controls handleInput={handleInput} />
+                </div>
+
+                <div className="player-stats">
+                    <div>{`${playerUsername}: ${playerScore}`}</div>
+                    <div>{`Trap Immunity: ${playerTrapImmunity}`}</div>
+                </div>
+            </>
+        )}
     </div>
-  );
+);
 }
 export default App;

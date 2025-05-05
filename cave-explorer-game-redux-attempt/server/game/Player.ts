@@ -77,8 +77,6 @@ export class Player {
 
         if (cellWithAnotherPlayer) {
             return {
-                newX,
-                newY,
                 outOfBounds: false,
                 hitObstacle: false,
                 hitTrap: false,
@@ -100,6 +98,8 @@ export class Player {
         }
         if (isTrapImmunityPowerUp) {
             this.trapImmunity = 3;
+            this.x = newX;
+            this.y = newY;
             grid.clearCell(newX, newY);
             return {
                 newX,

@@ -1,3 +1,4 @@
+import styles from './waitingRoom.module.css';
 import { Player } from "../../reducers/playerReducer";
 
 export interface WaitingRoomProps {
@@ -9,18 +10,18 @@ export const WaitingRoom = ({ players, leaveWaitingRoom }: WaitingRoomProps) => 
     const playersArray = Array.from(players.values());
     
     return (
-      <div className={'waiting-room'}>
-        <button onClick={leaveWaitingRoom}>X</button>
-        <div className={'loader'}>Loader</div>
-        <div className={'waiting-players'}>
-          <ul>
-            {playersArray.map((player, index) => (
-              <li key={index}>
-                <span className={'playerUsername'}>{player.username}</span>
-              </li>
-            ))}
-          </ul>
+        <div className={styles['waiting-room']}>
+            <button className={styles['exit-button']} onClick={leaveWaitingRoom}>Exit</button>
+            <div className={styles['loader']}>Waiting for players...</div>
+            <div className={styles['waiting-players']}>
+                <ul>
+                    {playersArray.map((player, index) => (
+                        <li key={index} className={styles['player-username']}>
+                            {player.username}
+                        </li>
+                    ))}
+                </ul>
+            </div>
         </div>
-      </div>
     );
-  };
+};
