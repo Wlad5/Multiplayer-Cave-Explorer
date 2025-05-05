@@ -8,7 +8,6 @@ export class Player {
     private playerDirection: PlayerDirection = PlayerDirection.NORTH;
     private score: number = 0;
     private username: string;
-
     constructor(playerId: string, username: string) {
         this.playerId = playerId;
         this.x = Math.floor(Math.random() * GRID_SIZE);
@@ -17,24 +16,30 @@ export class Player {
         this.username = username;
         this.score = 0;
     }
-
-    public turn(left: boolean): void {
-        switch (this.playerDirection) {
-            case PlayerDirection.NORTH:
-                this.playerDirection = left ? PlayerDirection.WEST : PlayerDirection.EAST;
-                break;
-            case PlayerDirection.EAST:
-                this.playerDirection = left ? PlayerDirection.NORTH : PlayerDirection.SOUTH;
-                break;
-            case PlayerDirection.SOUTH:
-                this.playerDirection = left ? PlayerDirection.EAST : PlayerDirection.WEST;
-                break;
-            case PlayerDirection.WEST:
-                this.playerDirection = left ? PlayerDirection.SOUTH : PlayerDirection.NORTH;
-                break;
+    public turn(move: string): void {
+        const directionMap: Record<string, PlayerDirection> = {
+            arrowup: PlayerDirection.NORTH,
+            w: PlayerDirection.NORTH,
+            "^": PlayerDirection.NORTH,
+            arrowdown: PlayerDirection.SOUTH,
+            s: PlayerDirection.SOUTH,
+            v: PlayerDirection.SOUTH,
+            arrowleft: PlayerDirection.WEST,
+            a: PlayerDirection.WEST,
+            "<": PlayerDirection.WEST,
+            arrowright: PlayerDirection.EAST,
+            d: PlayerDirection.EAST,
+            ">": PlayerDirection.EAST,
+        };
+    
+        const normalizedMove = move.toLowerCase();
+        const newDirection = directionMap[normalizedMove];
+        if (newDirection) {
+            this.playerDirection = newDirection;
+        } else {
+            console.error(`Invalid direction: ${move}`);
         }
     }
-
     public moveForward(grid: Grid, players: Map<string, Player>) {
         let newX = this.x;
         let newY = this.y;
@@ -114,7 +119,6 @@ export class Player {
             cellWithAnotherPlayer
         };
     }
-
     public addScore(points: number): void {
         this.score += points;
     }

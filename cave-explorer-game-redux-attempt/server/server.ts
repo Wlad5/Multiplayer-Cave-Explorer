@@ -17,16 +17,16 @@ const io = new Server(httpServer, {
   },
 });
 const MIN_PLAYERS = 3;
-const games               = new Map<string, Game>();
-const gameTimers          = new Map<string, NodeJS.Timeout>();
-const gameTimeLeftMap     = new Map<string, number>();
-const turnTimers          = new Map<string, NodeJS.Timeout>();
-const turnTimeLeftMap     = new Map<string, number>();
+const games                     = new Map<string, Game>();
+const gameTimers                = new Map<string, NodeJS.Timeout>();
+const gameTimeLeftMap           = new Map<string, number>();
+const turnTimers                = new Map<string, NodeJS.Timeout>();
+const turnTimeLeftMap           = new Map<string, number>();
 const obstacleMovementTimersMap = new Map<string, NodeJS.Timeout>();
-const waitingPlayersMap   = new Map<string, Player>();
-const playerGameMap       = new Map<string, string>();
-const currentPlayerMap    = new Map<string, string | null>();
-const disconnectedPlayers = new Map<string, {gameId: string, x: number, y: number, direction: PlayerDirection, score: number, username: string}>();
+const waitingPlayersMap         = new Map<string, Player>();
+const playerGameMap             = new Map<string, string>();
+const currentPlayerMap          = new Map<string, string | null>();
+const disconnectedPlayers       = new Map<string, {gameId: string, x: number, y: number, direction: PlayerDirection, score: number, username: string}>();
 
 io.on('connection', (socket) => {
   socket.on('createGame', ({ username }) => {
@@ -210,7 +210,7 @@ io.on('connection', (socket) => {
     socket.emit('activeGames', activeGames);
   })
 
-  socket.on('playerMove', ({ move, playerId }) => {
+  socket.on('playerMove', ({ playerId, move }) => {
     const gameId = playerGameMap.get(socket.id);
     const game = games.get(gameId!);
     let currentPlayerId = currentPlayerMap.get(gameId!);
@@ -230,6 +230,7 @@ io.on('connection', (socket) => {
       clearInterval(turnTimers.get(gameId));
       turnTimers.delete(gameId);
     }
+    console.log(move)
     const resultMessage = game?.playMove(move, socket.id);
     const updatedGrid = game?.getHiddenGrid();
     const updatedPlayer = game?.getPlayers().get(playerId);
@@ -429,7 +430,6 @@ const endGame = (gameId: string) => {
     clearInterval(obstacleMovementTimersMap.get(gameId)!);
     obstacleMovementTimersMap.delete(gameId);
   }
-
 
   const players = Array.from(game.getPlayers().keys());
   players.forEach(playerId => {

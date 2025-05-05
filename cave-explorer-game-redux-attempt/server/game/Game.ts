@@ -1,17 +1,17 @@
-import { OBSTACLE, TRAP, TREASURE } from "./constants";
+import { OBSTACLE, PlayerDirection, TRAP, TRAP_IMMUNITY_POWERUP, TREASURE } from "./constants";
 import { Grid } from "./Grid";
 import { Player } from "./Player";
 
 export class Game {
     private grid: Grid;
     private players: Map<string, Player>;
-
     constructor() {
         this.grid = new Grid();
         this.players = new Map<string, Player>();
         this.grid.placeRandomItems(TREASURE, 10);
         this.grid.placeRandomItems(TRAP, 10);
         this.grid.placeRandomItems(OBSTACLE, 7);
+        this.grid.placeRandomItems(TRAP_IMMUNITY_POWERUP, 10)
         this.players.forEach((player) => this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection()));
     }
     public playMove(move: string, playerId: string): string {
@@ -23,12 +23,32 @@ export class Game {
         const prevY = player.getY();
         let resultMessage = ``;
         switch (move) {
-            case "L": {
-                player.turn(true);
+            case "ArrowUp":
+            case "w": {
+                player.turn(PlayerDirection.NORTH);
+                this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection());
+                resultMessage = `Player turned NORTH.`;
                 break;
             }
-            case "R": {
-                player.turn(false);
+            case "ArrowDown":
+            case "s": {
+                player.turn(PlayerDirection.SOUTH);
+                this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection());
+                resultMessage = `Player turned SOUTH.`;
+                break;
+            }
+            case "ArrowLeft":
+            case "a": {
+                player.turn(PlayerDirection.WEST);
+                this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection());
+                resultMessage = `Player turned WEST.`;
+                break;
+            }
+            case "ArrowRight":
+            case "d": {
+                player.turn(PlayerDirection.EAST);
+                this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection());
+                resultMessage = `Player turned EAST.`;
                 break;
             }
             case "F": {

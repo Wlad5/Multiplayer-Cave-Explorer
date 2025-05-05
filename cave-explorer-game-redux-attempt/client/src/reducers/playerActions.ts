@@ -16,7 +16,7 @@ export interface RemovePlayerPayload {
 
 export interface TurnPlayerPayload {
     id: string;
-    left: boolean;
+    move: string;
 }
 export interface MovePlayerPayload {
     id: string;
@@ -42,11 +42,11 @@ export const removePlayerAC = (id: string) => ({
     }
 })
 
-export const turnPlayerAC = (id: string, left: boolean) => ({
+export const turnPlayerAC = (id: string, move: string) => ({
     type: TURN_PLAYER,
     payload: {
         id,
-        left
+        move
     }
 })
 

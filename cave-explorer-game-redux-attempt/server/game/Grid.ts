@@ -11,7 +11,6 @@ import {
 export class Grid {
     public grid: string[][] = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(EMPTY_CELL));
     public hiddenGrid: string[][] = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(HIDDEN_CELL));
-
     public placeRandomItems(item: string, count: number): void {
         let placed = 0;
         let attempts = 0;

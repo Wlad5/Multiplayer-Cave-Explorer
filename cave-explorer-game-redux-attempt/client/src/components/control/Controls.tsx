@@ -1,4 +1,5 @@
 import { useEffect } from "react"
+import { PlayerDirection } from "../../../../server/game/constants";
 
 interface ControlsProps {
     playerId: number;
@@ -7,7 +8,7 @@ interface ControlsProps {
     disabled: boolean;
 }
 
-export const Controls: React.FC<ControlsProps> = ({playerId,onMove, onExit}) => {
+export const Controls: React.FC<ControlsProps> = ({playerId, onMove, onExit}) => {
     const handleMove = (move: string) => {
         onMove(playerId, move);
     }
@@ -15,21 +16,17 @@ export const Controls: React.FC<ControlsProps> = ({playerId,onMove, onExit}) => 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             switch(e.key) {
-                case 'l':
-                    handleMove('L');
-                    break;
-                case 'r':
-                    handleMove('R');
-                    break;
-                case 'f':
-                    handleMove('F');
-                    break;
-                case 'e':
-                    handleMove('E');
-                    onExit();
-                    break;
-                default:
-                    console.log('Invalid key');
+                case 'ArrowUp'      : handleMove(PlayerDirection.NORTH);    break;
+                case 'ArrowDown'    : handleMove(PlayerDirection.SOUTH);    break;
+                case 'ArrowLeft'    : handleMove(PlayerDirection.WEST);     break;
+                case 'ArrowRight'   : handleMove(PlayerDirection.EAST);     break;
+                case 'w'            : handleMove(PlayerDirection.NORTH);    break;
+                case 's'            : handleMove(PlayerDirection.SOUTH);    break;
+                case 'a'            : handleMove(PlayerDirection.WEST);     break;
+                case 'd'            : handleMove(PlayerDirection.EAST);     break;
+                case 'f'            : handleMove('F');                      break;
+                case 'e'            : handleMove('E'); onExit();            break;
+                default             : console.log('Invalid key');
             }
         }
         window.addEventListener('keydown', handleKeyDown);
@@ -39,9 +36,10 @@ export const Controls: React.FC<ControlsProps> = ({playerId,onMove, onExit}) => 
     })
     return (
         <div className="controls">
-            <a></a>
-            <button onClick={() => handleMove('L')}>Left</button>
-            <button onClick={() => handleMove('R')}>Right</button>
+            <button onClick={() => handleMove(PlayerDirection.WEST)}>←</button>
+            <button onClick={() => handleMove(PlayerDirection.EAST)}>→</button>
+            <button onClick={() => handleMove(PlayerDirection.NORTH)}>↑</button>
+            <button onClick={() => handleMove(PlayerDirection.SOUTH)}>↓</button>
             <button onClick={() => handleMove('F')}>Forward</button>
         </div>
     )

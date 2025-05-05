@@ -24,6 +24,7 @@ import {
 } from "./reducers/playerActions";
 import { Player } from "./reducers/playerReducer";
 import { StartScreen } from "./components/startScreen/StartScreen";
+import { PlayerDirection } from "../../server/game/constants";
 
 const socket = io('http://localhost:3000');
 
@@ -130,22 +131,59 @@ function App() {
     });
   }, [players])
 
-  const handleMove = ( move: string) => {
-    socket.emit('playerMove', { playerId: socket.id, move });
-    switch(move) {
-      case 'L': {
-        dispatch(turnPlayerAC(socket.id!, true));
-        break;
-      }
-      case 'R': {
-        dispatch(turnPlayerAC(socket.id!, false));
-        break;
-      }
-      case 'F': {
-        dispatch(movePlayerAC(socket.id!, grid));
-      }
+  const handleInput = (move: string) => {
+    let serverMove = move;
+  
+    // Map PlayerDirection to server-compatible move strings
+    switch (move) {
+      case PlayerDirection.NORTH: serverMove = "ArrowUp"; break;
+      case PlayerDirection.SOUTH: serverMove = "ArrowDown"; break;
+      case PlayerDirection.WEST:  serverMove = "ArrowLeft"; break;
+      case PlayerDirection.EAST:  serverMove = "ArrowRight"; break;
     }
-  }
+  
+    socket.emit('playerMove', { playerId: socket.id, move: serverMove });
+  
+    switch (move) {
+      case PlayerDirection.NORTH:
+      case PlayerDirection.SOUTH:
+      case PlayerDirection.WEST:
+      case PlayerDirection.EAST:
+        dispatch(turnPlayerAC(socket.id!, move));
+        break;
+      case 'F':
+        dispatch(movePlayerAC(socket.id!, grid));
+        break;
+      case 'E':
+        exitGame();
+        break;
+      default:
+        console.log('Invalid move');
+    }
+  };
+  
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'ArrowUp'    :
+        case 'w'          : handleInput(PlayerDirection.NORTH);   break;
+        case 'ArrowDown'  :
+        case 's'          : handleInput(PlayerDirection.SOUTH);   break;
+        case 'ArrowLeft'  :
+        case 'a'          : handleInput(PlayerDirection.WEST);    break;
+        case 'ArrowRight' :
+        case 'd'          : handleInput(PlayerDirection.EAST);    break;
+        case 'f'          : handleInput('F');                     break;
+        case 'e'          : handleInput('E');                     break;
+        default:  console.log('Invalid key');
+      }
+    };
+  
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  });
 
   const play = () => {
     if (username.trim()) {
@@ -207,9 +245,11 @@ function App() {
           <div>Turn Time Left: {turnTimeLeft / 1000}s</div>
           <Gameboard exit={exitGame}/>
           {message && <div className="message">{message}</div>}
-          <button onClick={() => handleMove('L')}>Left</button>
-          <button onClick={() => handleMove('R')}>Right</button>
-          <button onClick={() => handleMove('F')}>Forward</button>
+          <button onClick={() => handleInput(PlayerDirection.WEST)}>←</button>
+          <button onClick={() => handleInput(PlayerDirection.EAST)}>→</button>
+          <button onClick={() => handleInput(PlayerDirection.NORTH)}>↑</button>
+          <button onClick={() => handleInput(PlayerDirection.SOUTH)}>↓</button>
+          <button onClick={() => handleInput('F')}>Forward</button>
           <div>
             {`${playerUsername}: ${playerScore}`}
           </div>

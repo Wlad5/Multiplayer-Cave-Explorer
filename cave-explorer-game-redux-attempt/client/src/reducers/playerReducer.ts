@@ -38,22 +38,22 @@ export const playerReducer = (state: Map<string, Player> = initialState, action:
             return new Map(state);
         }
         case TURN_PLAYER: {
-            const { id, left } = action.payload as TurnPlayerPayload;
+            const { id, move } = action.payload as TurnPlayerPayload;
             const player = state.get(id);
                 if (player) {
                     let newDirection = player.direction;
-                    switch (player.direction) {
+                    switch (move) {
                         case PlayerDirection.NORTH:
-                            newDirection = left ? PlayerDirection.WEST : PlayerDirection.EAST;
+                            newDirection = PlayerDirection.NORTH;
                             break;
                         case PlayerDirection.EAST:
-                            newDirection = left ? PlayerDirection.NORTH : PlayerDirection.SOUTH;
+                            newDirection = PlayerDirection.EAST;
                             break;
                         case PlayerDirection.SOUTH:
-                            newDirection = left ? PlayerDirection.EAST : PlayerDirection.WEST;
+                            newDirection = PlayerDirection.SOUTH;
                             break;
                         case PlayerDirection.WEST:
-                            newDirection = left ? PlayerDirection.SOUTH : PlayerDirection.NORTH;
+                            newDirection = PlayerDirection.WEST;
                             break;
                     }
                     state.set(id, {
