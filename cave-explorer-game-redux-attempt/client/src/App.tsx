@@ -20,11 +20,13 @@ import {
   movePlayerAC,
   removePlayerAC,
   turnPlayerAC,
-  updateScoreAC 
+  updateScoreAC, 
+  updateTrapImmunity
 } from "./reducers/playerActions";
 import { Player } from "./reducers/playerReducer";
 import { StartScreen } from "./components/startScreen/StartScreen";
 import { PlayerDirection } from "../../server/game/constants";
+import { Controls } from "./components/control/Controls";
 
 const socket = io('http://localhost:3000');
 
@@ -35,6 +37,7 @@ function App() {
   const activeGames               = useSelector((state: RootState) => state.game.activeGames);
   const grid                      = useSelector((state: RootState) => state.grid.grid);
   const players                   = useSelector((state: RootState) => state.player);
+  const currentPlayer             = useSelector((state: RootState) => state.game.currentPlayer);
   const message                   = useSelector((state: RootState) => state.game.message);
   const gameTimeLeft              = useSelector((state: RootState) => state.game.gameTimeLeft);
   const turnTimeLeft              = useSelector((state: RootState) => state.game.turnTimeLeft);
@@ -71,10 +74,11 @@ function App() {
     socket.on('playerUpdated', (updatedPlayer) => {
       console.log(`Player updated: ${updatedPlayer}`);
       dispatch(updateScoreAC(updatedPlayer.id, updatedPlayer.score));
+      dispatch(updateTrapImmunity(updatedPlayer.id, updatedPlayer.trapImmunity));
     });
 
-    socket.on('currentPlayer', (playerId) => {
-      dispatch(setCurrentPlayerAC(playerId));
+    socket.on('currentPlayer', (player) => {
+      dispatch(setCurrentPlayerAC(player));
     });
 
     socket.on('gameTimeUpdate', (timeLeft) => {
@@ -99,8 +103,8 @@ function App() {
       dispatch(showMessageAC(message));
     });
 
-    socket.on('gameCreated', (currentPlayerId) => {
-      dispatch(setCurrentPlayerAC(currentPlayerId))
+    socket.on('gameCreated', ({gameId}) => {
+      socket.emit('getCurrentPlayer', { gameId });
       dispatch(startGameAC());
     });
 
@@ -134,7 +138,6 @@ function App() {
   const handleInput = (move: string) => {
     let serverMove = move;
   
-    // Map PlayerDirection to server-compatible move strings
     switch (move) {
       case PlayerDirection.NORTH: serverMove = "ArrowUp"; break;
       case PlayerDirection.SOUTH: serverMove = "ArrowDown"; break;
@@ -189,7 +192,6 @@ function App() {
     if (username.trim()) {
       socket.emit('createGame', {username});
       dispatch(startGameAC());
-      dispatch(setCurrentPlayerAC(socket.id!));
     } else {
       alert(`Please enter a username!`);
     }
@@ -225,7 +227,9 @@ function App() {
     socket.emit('leaveGame', {playerId: socket.id});
   }
   const playerScore = players.get(socket.id!)?.score || 0;
-  const playerUsername = players.get(socket.id!)?.username || username
+  const playerUsername = players.get(socket.id!)?.username || username;
+  const currentPlayerUsername = currentPlayer?.username || username;
+  const playerTrapImmunity = players.get(socket.id!)?.trapImmunity || 0;
 
   return (
     <div className="app">
@@ -243,15 +247,13 @@ function App() {
         <>
           <div>Game Time Left: {gameTimeLeft / 1000}s</div>
           <div>Turn Time Left: {turnTimeLeft / 1000}s</div>
+          <div>It is {currentPlayerUsername}'s turn!</div>
           <Gameboard exit={exitGame}/>
           {message && <div className="message">{message}</div>}
-          <button onClick={() => handleInput(PlayerDirection.WEST)}>←</button>
-          <button onClick={() => handleInput(PlayerDirection.EAST)}>→</button>
-          <button onClick={() => handleInput(PlayerDirection.NORTH)}>↑</button>
-          <button onClick={() => handleInput(PlayerDirection.SOUTH)}>↓</button>
-          <button onClick={() => handleInput('F')}>Forward</button>
+          <Controls handleInput={handleInput} />
           <div>
             {`${playerUsername}: ${playerScore}`}
+            {`Trap Immunity: ${playerTrapImmunity}`}
           </div>
         </>
       )}

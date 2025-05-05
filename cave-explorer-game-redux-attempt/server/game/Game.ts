@@ -56,9 +56,15 @@ export class Game {
                 if (result.outOfBounds) {
                     resultMessage = `Cannot move forward! Out of bounds.`;
                 } else if (result.hitTrap) {
-                    player.subtractScore(10);
-                    resultMessage = `You hit a trap! -10 points deducted.`;
-                    console.log(`Player ${player.getId()} has ${player.getScore()} points`);
+                    if (player.getTrapImmunity() > 0) {
+                        player.setTrapImmunity(player.getTrapImmunity() - 1);
+                        resultMessage = `You hit a trap, but you have immunity! You can now move through ${player.getTrapImmunity()} traps.`;
+                        player.subtractScore(0);
+                    } else {
+                        player.subtractScore(10);
+                        resultMessage = `You hit a trap! -10 points deducted.`;
+                        console.log(`Player ${player.getId()} has ${player.getScore()} points`);
+                    }
                 } else if (result.foundTreasure) {
                     player.addScore(5);
                     resultMessage = `You found treasure! +5 points added.`;
@@ -67,6 +73,8 @@ export class Game {
                     resultMessage = `There is an obstacle in the way! You cannot move forward.`;
                 } else if (result.cellWithAnotherPlayer) {
                     resultMessage = `There is another player in the way! You cannot move forward.`;
+                } else if (result.isTrapImmunityPowerUp) {
+                    resultMessage = `You found a trap immunity power-up! You can now move through 3 traps.`;
                 }
                 console.log(prevX, prevY)
                 this.grid.revealLineOfSight(player.getX(), player.getY(), player.getDirection());

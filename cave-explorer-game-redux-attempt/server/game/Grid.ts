@@ -5,6 +5,7 @@ import {
     OBSTACLE,
     PlayerDirection,
     TRAP,
+    TRAP_IMMUNITY_POWERUP,
     TREASURE 
 } from "./constants";
 
@@ -107,5 +108,8 @@ export class Grid {
     public clearCell(x: number, y: number): void {
         this.grid[x][y] = EMPTY_CELL;
         this.hiddenGrid[x][y] = EMPTY_CELL;
+    }
+    public isTrapImmunityPowerUp(x: number, y: number): boolean {
+        return this.grid[x][y] === TRAP_IMMUNITY_POWERUP;
     }
 }

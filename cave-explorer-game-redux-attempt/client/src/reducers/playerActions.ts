@@ -5,6 +5,7 @@ export const REMOVE_PLAYER  = 'REMOVE_PLAYER';
 export const TURN_PLAYER    = 'TURN_PLAYER';
 export const MOVE_PLAYER    = 'MOVE_PLAYER';
 export const UPDATE_SCORE   = 'UPDATE_SCORE';
+export const UPDATE_TRAP_IMMUNITY = 'UPDATE_TRAP_IMMUNITY';
 
 export interface AddPlayerPayload  {
     player: Player
@@ -26,6 +27,11 @@ export interface MovePlayerPayload {
 export interface UpdateScorePayload {
     id: string;
     score: number;
+}
+
+export interface UpdateTrapImmunityPayload {
+    id: string;
+    trapImmunity: number;
 }
 
 export const addPlayerAC = (player: Player) => ({
@@ -66,15 +72,24 @@ export const updateScoreAC = (id: string, score: number) => ({
     }
 })
 
+export const updateTrapImmunity = (id: string, trapImmunity: number) => ({
+    type: UPDATE_TRAP_IMMUNITY,
+    payload: {
+        id,
+        trapImmunity
+    }
+})
+
 export type AddPlayer   = ReturnType<typeof addPlayerAC>
 export type RemovePlayer = ReturnType<typeof removePlayerAC>
 export type TurnPlayer  = ReturnType<typeof turnPlayerAC>
 export type MovePlayer  = ReturnType<typeof movePlayerAC>
 export type UpdateScore = ReturnType<typeof updateScoreAC>
-
+export type UpdateTrapImmunity = ReturnType<typeof updateTrapImmunity>
 export type PlayerActions = 
     | AddPlayer
     | RemovePlayer
     | TurnPlayer
     | MovePlayer
-    | UpdateScore;
+    | UpdateScore
+    | UpdateTrapImmunity;

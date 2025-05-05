@@ -16,7 +16,7 @@ export interface ShowMessagePayload {
 }
 
 export interface SetCurrentPlayerPayload {
-    playerId: string;
+    player: Player | null;
 }
 
 export interface SetGameTimerPayload {
@@ -74,10 +74,10 @@ export const setWaitingPlayersAC = (waitingPlayers: Map<string, Player>) => ({
     }
 })
 
-export const setCurrentPlayerAC = (playerId: string) => ({
+export const setCurrentPlayerAC = (player: Player | null) => ({
     type: SET_CURRENT_PLAYER,
     payload: {
-        playerId
+        player
     }
 })
 

@@ -29,7 +29,7 @@ export interface GameState {
     turnTimer: number | null;
     turnTimeLeft: number;
     message?: string;
-    currentPlayer: string | null;
+    currentPlayer: Player | null;
     playerMoved: boolean;
     leaderBoard: {playerId: number, score: number}[] | [];
     activeGames: string[] | [];
@@ -116,10 +116,10 @@ export const gameReducer = (state: GameState = initialState, action: GameActions
         }
         case SET_CURRENT_PLAYER: {
             if ('payload' in action) {
-                const {playerId} = action.payload as SetCurrentPlayerPayload;
+                const {player} = action.payload as SetCurrentPlayerPayload;
                 return {
                     ...state,
-                    currentPlayer: playerId
+                    currentPlayer: player
                 }
             }
             return state;

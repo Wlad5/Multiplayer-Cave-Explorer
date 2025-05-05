@@ -1,5 +1,5 @@
 import { GRID_SIZE, OBSTACLE, PlayerDirection, TRAP, TREASURE } from "../../../server/game/constants"
-import { ADD_PLAYER, AddPlayerPayload, MOVE_PLAYER, MovePlayerPayload, PlayerActions, REMOVE_PLAYER, RemovePlayerPayload, TURN_PLAYER, TurnPlayerPayload, UPDATE_SCORE, UpdateScorePayload } from "./playerActions"
+import { ADD_PLAYER, AddPlayerPayload, MOVE_PLAYER, MovePlayerPayload, PlayerActions, REMOVE_PLAYER, RemovePlayerPayload, TURN_PLAYER, TurnPlayerPayload, UPDATE_SCORE, UPDATE_TRAP_IMMUNITY, UpdateScorePayload, UpdateTrapImmunityPayload } from "./playerActions"
 
 export interface Player {
     id: string;
@@ -9,6 +9,7 @@ export interface Player {
     score: number;
     username: string;
     status: 'idle' | 'moved' | 'hitTrap' | 'hitObstacle' | 'foundTreasure' | 'outOfBounds';
+    trapImmunity: number;
 }
 
 const initialState: Map<string, Player> = new Map();
@@ -64,7 +65,6 @@ export const playerReducer = (state: Map<string, Player> = initialState, action:
                 }
             return new Map(state);
         }
-            
         case MOVE_PLAYER: {
             const { id, grid } = action.payload as MovePlayerPayload;
             const player = state.get(id);
@@ -154,7 +154,20 @@ export const playerReducer = (state: Map<string, Player> = initialState, action:
                         score: score
                     })
                 }
-                return new Map(state);
+            return new Map(state);
+        }
+        case UPDATE_TRAP_IMMUNITY: {
+            if ('payload' in action) {
+                const {id, trapImmunity} = action.payload as UpdateTrapImmunityPayload;
+                const player = state.get(id);
+                if (player) {
+                    state.set(id, {
+                        ...player,
+                        trapImmunity: trapImmunity
+                    })
+                }
+            }
+            return new Map(state);
         }
         default: {
             return state;

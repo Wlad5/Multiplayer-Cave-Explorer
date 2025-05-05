@@ -3,11 +3,12 @@ import { Grid } from "./Grid";
 
 export class Player {
     private playerId: string;
-    private x: number = 0;
-    private y: number = 0;
-    private playerDirection: PlayerDirection = PlayerDirection.NORTH;
-    private score: number = 0;
+    private x: number;
+    private y: number;
+    private playerDirection: PlayerDirection;
+    private score: number;
     private username: string;
+    private trapImmunity: number;
     constructor(playerId: string, username: string) {
         this.playerId = playerId;
         this.x = Math.floor(Math.random() * GRID_SIZE);
@@ -15,6 +16,7 @@ export class Player {
         this.playerDirection = Object.values(PlayerDirection)[Math.floor(Math.random() * Object.values(PlayerDirection).length)];
         this.username = username;
         this.score = 0;
+        this.trapImmunity = 0;
     }
     public turn(move: string): void {
         const directionMap: Record<string, PlayerDirection> = {
@@ -45,18 +47,10 @@ export class Player {
         let newY = this.y;
     
         switch (this.playerDirection) {
-            case PlayerDirection.NORTH:
-                newX--;
-                break;
-            case PlayerDirection.EAST:
-                newY++;
-                break;
-            case PlayerDirection.SOUTH:
-                newX++;
-                break;
-            case PlayerDirection.WEST:
-                newY--;
-                break;
+            case PlayerDirection.NORTH  : newX--; break;
+            case PlayerDirection.EAST   : newY++; break;
+            case PlayerDirection.SOUTH  : newX++; break;
+            case PlayerDirection.WEST   : newY--; break;
         }
     
         const outOfBounds = grid.isOutOfBounds(newX, newY);
@@ -69,13 +63,14 @@ export class Player {
                 hitObstacle: false,
                 hitTrap: false,
                 foundTreasure: false,
-                cellWithAnotherPlayer: false
+                cellWithAnotherPlayer: false,
+                isTrapImmunityPowerUp: false
             };
         }
         const hitTrap = grid.isTrap(newX, newY);
         const foundTreasure = grid.isTreasure(newX, newY);
         const hitObstacle = grid.isObstacle(newX, newY);
-
+        const isTrapImmunityPowerUp = grid.isTrapImmunityPowerUp(newX, newY);
         const cellWithAnotherPlayer = Array.from(players.values()).some(
             (player) => player.getX() === newX && player.getY() === newY && player.getId() !== this.playerId
         );
@@ -88,7 +83,8 @@ export class Player {
                 hitObstacle: false,
                 hitTrap: false,
                 foundTreasure: false,
-                cellWithAnotherPlayer: true
+                cellWithAnotherPlayer: true,
+                isTrapImmunityPowerUp: false
             };
         }
         
@@ -98,7 +94,22 @@ export class Player {
                 hitObstacle: true,
                 hitTrap: false,
                 foundTreasure: false,
-                cellWithAnotherPlayer: false
+                cellWithAnotherPlayer: false,
+                isTrapImmunityPowerUp: false
+            }
+        }
+        if (isTrapImmunityPowerUp) {
+            this.trapImmunity = 3;
+            grid.clearCell(newX, newY);
+            return {
+                newX,
+                newY,
+                outOfBounds: false,
+                hitObstacle: false,
+                hitTrap: false,
+                foundTreasure: false,
+                cellWithAnotherPlayer: false,
+                isTrapImmunityPowerUp: true
             }
         }
     
@@ -116,7 +127,8 @@ export class Player {
             hitObstacle: false,
             hitTrap,
             foundTreasure,
-            cellWithAnotherPlayer
+            cellWithAnotherPlayer: false,
+            isTrapImmunityPowerUp: false,
         };
     }
     public addScore(points: number): void {
@@ -155,5 +167,11 @@ export class Player {
     }
     public setUsername(username: string): void {
         this.username = username;
+    }
+    public getTrapImmunity(): number {
+        return this.trapImmunity;
+    }
+    public setTrapImmunity(immunity: number): void {
+        this.trapImmunity = immunity;
     }
 }
