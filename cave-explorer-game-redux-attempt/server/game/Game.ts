@@ -23,73 +23,79 @@ export class Game {
         const prevY = player.getY();
         let resultMessage = ``;
         switch (move) {
-            case "ArrowUp":
-            case "w": {
-                player.turn(PlayerDirection.NORTH);
-                this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection());
-                resultMessage = `Player turned NORTH.`;
-                break;
-            }
-            case "ArrowDown":
-            case "s": {
-                player.turn(PlayerDirection.SOUTH);
-                this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection());
-                resultMessage = `Player turned SOUTH.`;
-                break;
-            }
-            case "ArrowLeft":
-            case "a": {
-                player.turn(PlayerDirection.WEST);
-                this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection());
-                resultMessage = `Player turned WEST.`;
-                break;
-            }
-            case "ArrowRight":
-            case "d": {
-                player.turn(PlayerDirection.EAST);
-                this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection());
-                resultMessage = `Player turned EAST.`;
-                break;
-            }
             case "F": {
-                const result = player.moveForward(this.grid, this.players);
-                if (result.outOfBounds) {
-                    resultMessage = `Cannot move forward! Out of bounds.`;
-                } else if (result.hitTrap) {
-                    if (player.getTrapImmunity() > 0) {
-                        player.setTrapImmunity(player.getTrapImmunity() - 1);
-                        resultMessage = `You hit a trap, but you have immunity! You can now move through ${player.getTrapImmunity()} traps.`;
-                        player.subtractScore(0);
-                    } else {
-                        player.subtractScore(10);
-                        resultMessage = `You hit a trap! -10 points deducted.`;
-                        console.log(`Player ${player.getId()} has ${player.getScore()} points`);
+                const result = player.move(this.grid, this.players);
+                switch (true) {
+                    case result.outOfBounds: {
+                        resultMessage = this.handleOutOfBounds();
+                        break;
                     }
-                } else if (result.foundTreasure) {
-                    player.addScore(5);
-                    resultMessage = `You found treasure! +5 points added.`;
-                    console.log(`Player ${player.getId()} has ${player.getScore()} points`);
-                } else if (result.hitObstacle) {
-                    resultMessage = `There is an obstacle in the way! You cannot move forward.`;
-                } else if (result.cellWithAnotherPlayer) {
-                    resultMessage = `There is another player in the way! You cannot move forward.`;
-                } else if (result.isTrapImmunityPowerUp) {
-                    resultMessage = `You found a trap immunity power-up! You can now move through 3 traps.`;
+                    case result.hitTrap: {
+                        resultMessage = this.handleHitTrap(player);
+                        break;
+                    }
+                    case result.foundTreasure: {
+                        resultMessage = this.handleFoundTreasure(player, );
+                        break;
+                    }
+                    case result.hitObstacle: {
+                        resultMessage = this.handleHitObstacle();
+                        break;
+                    }
+                    case result.cellWithAnotherPlayer: {
+                        resultMessage = this.handleCellWithAnotherPlayer();
+                        break;
+                    }
+                    case result.isTrapImmunityPowerUp: {
+                        resultMessage = this.handleIsTrapImmunityPowerUp();
+                        break;
+                    }
                 }
                 console.log(prevX, prevY)
                 this.grid.revealLineOfSight(player.getX(), player.getY(), player.getDirection());
                 break;
             }
             case "E": {
-                resultMessage = `Exitting the game`
+                this.handleExitGame();
                 break;
             }
             default:
-                resultMessage = `Invalid command! Use L, R, or F.`;
-        }
+                this.handleInvalidCommand();
+                break;
+            }
 
         this.grid.clearCell(prevX, prevY);
         this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection());
+        return resultMessage;
+    }
+    public turnPlayer(direction: string, playerId: string): string {
+        const player = this.players.get(playerId);
+        if (!player) {
+            return `Player not found!`;
+        }
+        let resultMessage = ``;
+        switch (direction) {
+            case "ArrowUp":
+            case "w": {
+                resultMessage = this.handleDirectionNorth(player);
+                break;
+            }
+            case "ArrowDown":
+            case "s": {
+                resultMessage = this.handleDirectionSouth(player);
+                break;
+            }
+            case "ArrowLeft":
+            case "a": {
+                resultMessage = this.handleDirectionWest(player);
+                break;
+            }
+            case "ArrowRight":
+            case "d": {
+                resultMessage = this.handleDirectionEast(player);
+                break;
+            }
+        }
         return resultMessage;
     }
     public addPlayer(playerId: string, username: string): void {
@@ -134,5 +140,59 @@ export class Game {
     }
     public getPlayers() {
         return this.players;
+    }
+    public handleHitTrap(player: Player): string {
+        if (player.getTrapImmunity() > 0) {
+            player.setTrapImmunity(player.getTrapImmunity() - 1);
+            player.subtractScore(0);
+            return`You hit a trap, but you have immunity! You can now move through ${player.getTrapImmunity()} traps.`;
+        } else {
+            player.subtractScore(10);
+            console.log(`Player ${player.getId()} has ${player.getScore()} points`);
+            return `You hit a trap! -10 points deducted.`;
+        }
+    }
+    public handleFoundTreasure(player: Player, ): string {
+        player.addScore(5);
+        console.log(`Player ${player.getId()} has ${player.getScore()} points`);
+        return `You found treasure! +5 points added.`;
+    }
+    public handleHitObstacle(): string {
+        return `There is an obstacle in the way! You cannot move forward.`;
+    }
+    public handleCellWithAnotherPlayer(): string {
+        return `There is another player in the way! You cannot move forward.`;
+    }
+    public handleIsTrapImmunityPowerUp(): string {
+        return `You found a trap immunity power-up! You can now move through 3 traps.`;
+    }
+    public handleOutOfBounds(): string {
+        return `Cannot move forward! Out of bounds.`;
+    }
+    public handleExitGame(): string {
+        return `Exitting the game`;
+    }
+    public handleInvalidCommand(): string {
+        return `Invalid command! Use W, A, S, D, the Arrow Keys, E or F.`;
+    }
+    public handleDirectionNorth(player: Player): string {
+        player.turn(PlayerDirection.NORTH);
+        this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection());
+        return `Player turned NORTH.`;
+    }
+    public handleDirectionSouth(player: Player): string {
+        player.turn(PlayerDirection.SOUTH);
+        this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection());
+        return `Player turned SOUTH.`;
+    }
+    public handleDirectionWest(player: Player): string {
+        player.turn(PlayerDirection.WEST);
+        this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection());
+        return `Player turned WEST.`;
+    }
+    public handleDirectionEast(player: Player): string {
+        player.turn(PlayerDirection.EAST);
+        this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection());
+        return `Player turned EAST.`;
     }
 }

@@ -9,6 +9,7 @@ export const TREASURE               : string    = 'T';
 export const TRAP                   : string    = 'X';
 export const OBSTACLE               : string    = 'O';
 export const TRAP_IMMUNITY_POWERUP  : string    = 'P';
+export const TWO_MOVES_IN_A_ROW     : string    = 'X2';
 
 export enum PlayerDirection {
     NORTH   = '^',

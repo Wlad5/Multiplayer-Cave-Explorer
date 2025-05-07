@@ -31,9 +31,10 @@ export interface GameState {
     message?: string;
     currentPlayer: Player | null;
     playerMoved: boolean;
-    leaderBoard: {playerId: number, score: number}[] | [];
+    leaderBoard: {username: string,playerId: number, score: number}[] | [];
     activeGames: string[] | [];
     waitingPlayers: Map<string, Player>;
+    winner: {username: string, playerId: string, score: number} | null;
 }
 
 export const initialState: GameState = {
@@ -48,7 +49,8 @@ export const initialState: GameState = {
     playerMoved: false,
     leaderBoard: [],
     activeGames: [],
-    waitingPlayers: new Map<string, Player>()
+    waitingPlayers: new Map<string, Player>(),
+    winner: null,
 }
 
 export const gameReducer = (state: GameState = initialState, action: GameActions): GameState => {
@@ -79,8 +81,7 @@ export const gameReducer = (state: GameState = initialState, action: GameActions
                 clearInterval(state.turnTimer);
             }
             if ('payload' in action) {
-                const { playersScores } = action.payload as EndGamePayload;
-                const sortedPlayerScores = playersScores.sort((a, b) => b.score - a.score);
+                const { playersScores, winner } = action.payload as EndGamePayload;
                 console.log(playersScores)
                 return {
                     ...state,
@@ -89,7 +90,8 @@ export const gameReducer = (state: GameState = initialState, action: GameActions
                     turnTimer: null,
                     gameTimeLeft: 0,
                     turnTimeLeft: 0,
-                    leaderBoard: sortedPlayerScores
+                    leaderBoard: playersScores,
+                    winner: winner,
                 };
             }
             return state;

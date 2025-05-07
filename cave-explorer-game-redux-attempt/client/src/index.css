@@ -66,11 +66,14 @@ button {
 
 /* Message Area */
 .message-area {
-    margin-top: 10px;
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    /* margin-top: 10px; */
     font-size: 16px;
     font-weight: bold;
     color: red;
-    text-align: center;
+    text-align: left;
 }
 
 /* Controls */
@@ -92,4 +95,9 @@ button {
     margin-top: 20px;
     font-size: 16px;
     text-align: center;
+}
+
+.leaderBoard {
+    border: 1px solid red; /* Debugging */
+    background-color: lightyellow; /* Debugging */
 }

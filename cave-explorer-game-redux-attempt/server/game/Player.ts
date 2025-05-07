@@ -42,7 +42,7 @@ export class Player {
             console.error(`Invalid direction: ${move}`);
         }
     }
-    public moveForward(grid: Grid, players: Map<string, Player>) {
+    public move(grid: Grid, players: Map<string, Player>) {
         let newX = this.x;
         let newY = this.y;
     

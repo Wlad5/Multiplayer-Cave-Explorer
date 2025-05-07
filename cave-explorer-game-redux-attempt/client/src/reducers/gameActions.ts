@@ -33,9 +33,7 @@ export interface SetMoveMadePayload {
     moveMade: boolean;
 }
 
-export interface EndGamePayload {
-    playersScores: {playerId: number, score: number}[];
-}
+
 
 export interface SetActiveGamesPayload {
     activeGames: string[];
@@ -49,14 +47,20 @@ export const startGameAC = () => ({
     type: START_GAME
 })
 
+export interface EndGamePayload {
+    playersScores: {username: string, playerId: number, score: number}[];
+    winner: {username: string, playerId: string, score: number};
+}
+
 export const exitGameAC = () => ({
     type: EXIT_GAME
 })
 
-export const endGameAC = (playersScores: {playerId: number, score: number}[]) => ({
+export const endGameAC = (playersScores: {username: string, playerId: number, score: number}[], winner: {username: string, playerId: string, score: number}) => ({
     type: END_GAME,
     payload: {
-        playersScores
+        playersScores,
+        winner
     }
 })
 
