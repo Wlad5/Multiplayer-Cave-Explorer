@@ -6,7 +6,8 @@ import {
     PlayerDirection,
     TRAP,
     TRAP_IMMUNITY_POWERUP,
-    TREASURE 
+    TREASURE, 
+    TWO_MOVES_IN_A_ROW
 } from "./constants";
 
 export class Grid {
@@ -111,5 +112,8 @@ export class Grid {
     }
     public isTrapImmunityPowerUp(x: number, y: number): boolean {
         return this.grid[x][y] === TRAP_IMMUNITY_POWERUP;
+    }
+    public isX2PowerUp(x: number, y: number): boolean {
+        return this.grid[x][y] === TWO_MOVES_IN_A_ROW;
     }
 }

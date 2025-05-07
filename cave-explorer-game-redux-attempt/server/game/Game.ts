@@ -1,4 +1,11 @@
-import { OBSTACLE, PlayerDirection, TRAP, TRAP_IMMUNITY_POWERUP, TREASURE } from "./constants";
+import { 
+    OBSTACLE,
+    PlayerDirection,
+    TRAP,
+    TRAP_IMMUNITY_POWERUP,
+    TREASURE,
+    TWO_MOVES_IN_A_ROW
+ } from "./constants";
 import { Grid } from "./Grid";
 import { Player } from "./Player";
 
@@ -11,10 +18,11 @@ export class Game {
         this.grid.placeRandomItems(TREASURE, 10);
         this.grid.placeRandomItems(TRAP, 10);
         this.grid.placeRandomItems(OBSTACLE, 7);
-        this.grid.placeRandomItems(TRAP_IMMUNITY_POWERUP, 10)
+        this.grid.placeRandomItems(TRAP_IMMUNITY_POWERUP, 10);
+        this.grid.placeRandomItems(TWO_MOVES_IN_A_ROW, 10);
         this.players.forEach((player) => this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection()));
     }
-    public playMove(move: string, playerId: string): string {
+    public movePlayer(move: string, playerId: string): string {
         const player = this.players.get(playerId);
         if (!player) {
             return `Player not found!`;
@@ -26,42 +34,20 @@ export class Game {
             case "F": {
                 const result = player.move(this.grid, this.players);
                 switch (true) {
-                    case result.outOfBounds: {
-                        resultMessage = this.handleOutOfBounds();
-                        break;
-                    }
-                    case result.hitTrap: {
-                        resultMessage = this.handleHitTrap(player);
-                        break;
-                    }
-                    case result.foundTreasure: {
-                        resultMessage = this.handleFoundTreasure(player, );
-                        break;
-                    }
-                    case result.hitObstacle: {
-                        resultMessage = this.handleHitObstacle();
-                        break;
-                    }
-                    case result.cellWithAnotherPlayer: {
-                        resultMessage = this.handleCellWithAnotherPlayer();
-                        break;
-                    }
-                    case result.isTrapImmunityPowerUp: {
-                        resultMessage = this.handleIsTrapImmunityPowerUp();
-                        break;
-                    }
+                    case result.outOfBounds             : resultMessage = this.handleOutOfBounds();             break;
+                    case result.hitObstacle             : resultMessage = this.handleHitObstacle();             break;
+                    case result.hitTrap                 : resultMessage = this.handleHitTrap(player);           break;
+                    case result.isX2PowerUp             : resultMessage = this.handleX2PowerUp(player);         break;
+                    case result.foundTreasure           : resultMessage = this.handleFoundTreasure(player);     break;
+                    case result.cellWithAnotherPlayer   : resultMessage = this.handleCellWithAnotherPlayer();   break;
+                    case result.isTrapImmunityPowerUp   : resultMessage = this.handleIsTrapImmunityPowerUp();   break;
                 }
                 console.log(prevX, prevY)
                 this.grid.revealLineOfSight(player.getX(), player.getY(), player.getDirection());
                 break;
             }
-            case "E": {
-                this.handleExitGame();
-                break;
-            }
-            default:
-                this.handleInvalidCommand();
-                break;
+            case "E":   this.handleExitGame();          break;
+            default:    this.handleInvalidCommand();    break;
             }
 
         this.grid.clearCell(prevX, prevY);
@@ -168,6 +154,10 @@ export class Game {
     }
     public handleOutOfBounds(): string {
         return `Cannot move forward! Out of bounds.`;
+    }
+    public handleX2PowerUp(player: Player): string {
+        player.setHasX2PowerUp(true);
+        return `You found a power-up! You can now move twice in a row!`;
     }
     public handleExitGame(): string {
         return `Exitting the game`;

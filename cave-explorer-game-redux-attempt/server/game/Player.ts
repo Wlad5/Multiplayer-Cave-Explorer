@@ -9,6 +9,7 @@ export class Player {
     private score: number;
     private username: string;
     private trapImmunity: number;
+    private hasX2PowerUp: boolean;
     constructor(playerId: string, username: string) {
         this.playerId = playerId;
         this.x = Math.floor(Math.random() * GRID_SIZE);
@@ -17,6 +18,7 @@ export class Player {
         this.username = username;
         this.score = 0;
         this.trapImmunity = 0;
+        this.hasX2PowerUp = false;
     }
     public turn(move: string): void {
         const directionMap: Record<string, PlayerDirection> = {
@@ -47,14 +49,14 @@ export class Player {
         let newY = this.y;
     
         switch (this.playerDirection) {
-            case PlayerDirection.NORTH  : newX--; break;
-            case PlayerDirection.EAST   : newY++; break;
-            case PlayerDirection.SOUTH  : newX++; break;
-            case PlayerDirection.WEST   : newY--; break;
+            case PlayerDirection.NORTH: newX--; break;
+            case PlayerDirection.EAST: newY++; break;
+            case PlayerDirection.SOUTH: newX++; break;
+            case PlayerDirection.WEST: newY--; break;
         }
     
         const outOfBounds = grid.isOutOfBounds(newX, newY);
-        
+    
         if (outOfBounds) {
             return {
                 newX,
@@ -64,9 +66,11 @@ export class Player {
                 hitTrap: false,
                 foundTreasure: false,
                 cellWithAnotherPlayer: false,
-                isTrapImmunityPowerUp: false
+                isTrapImmunityPowerUp: false,
+                isX2PowerUp: false
             };
         }
+    
         const hitTrap = grid.isTrap(newX, newY);
         const foundTreasure = grid.isTreasure(newX, newY);
         const hitObstacle = grid.isObstacle(newX, newY);
@@ -74,7 +78,8 @@ export class Player {
         const cellWithAnotherPlayer = Array.from(players.values()).some(
             (player) => player.getX() === newX && player.getY() === newY && player.getId() !== this.playerId
         );
-
+        const isX2PowerUp = grid.isX2PowerUp(newX, newY);
+    
         if (cellWithAnotherPlayer) {
             return {
                 outOfBounds: false,
@@ -82,10 +87,11 @@ export class Player {
                 hitTrap: false,
                 foundTreasure: false,
                 cellWithAnotherPlayer: true,
-                isTrapImmunityPowerUp: false
+                isTrapImmunityPowerUp: false,
+                isX2PowerUp: false
             };
         }
-        
+    
         if (hitObstacle) {
             return {
                 outOfBounds: false,
@@ -93,9 +99,11 @@ export class Player {
                 hitTrap: false,
                 foundTreasure: false,
                 cellWithAnotherPlayer: false,
-                isTrapImmunityPowerUp: false
-            }
+                isTrapImmunityPowerUp: false,
+                isX2PowerUp: false
+            };
         }
+    
         if (isTrapImmunityPowerUp) {
             this.trapImmunity = 3;
             this.x = newX;
@@ -109,8 +117,27 @@ export class Player {
                 hitTrap: false,
                 foundTreasure: false,
                 cellWithAnotherPlayer: false,
-                isTrapImmunityPowerUp: true
-            }
+                isTrapImmunityPowerUp: true,
+                isX2PowerUp: false
+            };
+        }
+    
+        if (isX2PowerUp) {
+            this.hasX2PowerUp = true;
+            this.x = newX;
+            this.y = newY;
+            grid.clearCell(newX, newY);
+            return {
+                newX,
+                newY,
+                outOfBounds: false,
+                hitObstacle: false,
+                hitTrap: false,
+                foundTreasure: false,
+                cellWithAnotherPlayer: false,
+                isTrapImmunityPowerUp: false,
+                isX2PowerUp: true
+            };
         }
     
         if (hitTrap || foundTreasure) {
@@ -129,6 +156,7 @@ export class Player {
             foundTreasure,
             cellWithAnotherPlayer: false,
             isTrapImmunityPowerUp: false,
+            isX2PowerUp
         };
     }
     public addScore(points: number): void {
@@ -173,5 +201,11 @@ export class Player {
     }
     public setTrapImmunity(immunity: number): void {
         this.trapImmunity = immunity;
+    }
+    public getHasX2PowerUp(): boolean {
+        return this.hasX2PowerUp;
+    }
+    public setHasX2PowerUp(hasX2PowerUp: boolean): void {
+        this.hasX2PowerUp = hasX2PowerUp;
     }
 }

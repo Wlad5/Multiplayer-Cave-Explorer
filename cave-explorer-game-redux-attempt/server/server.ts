@@ -309,7 +309,7 @@ io.on("connection", (socket) => {
         }
         turnTimeLeftMap.set(gameId, 0);
         io.emit("turnTimerUpdate", { playerId, timeLeft: 0 });
-        const resultMessage = game?.playMove(move, socket.id);
+        const resultMessage = game?.movePlayer(move, socket.id);
         const updatedGrid = game?.getHiddenGrid();
         const updatedPlayer = game?.getPlayers().get(playerId);
         if (updatedPlayer) {
@@ -327,6 +327,22 @@ io.on("connection", (socket) => {
                 username: updatedPlayer.getUsername(),
                 trapImmunity: updatedPlayer.getTrapImmunity(),
             });
+            if (updatedPlayer.getHasX2PowerUp()) {
+                console.log(`Player ${playerId} has an extra move!`);
+                socket.emit("message", `You have an extra move!`);
+                updatedPlayer.setHasX2PowerUp(false);
+                io.to(gameId).emit("currentPlayer", {
+                    id: updatedPlayer.getId(),
+                    x: updatedPlayer.getX(),
+                    y: updatedPlayer.getY(),
+                    direction: updatedPlayer.getDirection(),
+                    score: updatedPlayer.getScore(),
+                    username: updatedPlayer.getUsername(),
+                    trapImmunity: updatedPlayer.getTrapImmunity(),
+                });
+    
+                return;
+            }
         }
         nextPlayer(gameId);
     });
