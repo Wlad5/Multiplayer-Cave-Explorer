@@ -1,15 +1,35 @@
-import { GRID_SIZE, OBSTACLE, PlayerDirection, TRAP, TREASURE } from "../../../server/game/constants"
-import { ADD_PLAYER, AddPlayerPayload, MOVE_PLAYER, MovePlayerPayload, PlayerActions, REMOVE_PLAYER, RemovePlayerPayload, TURN_PLAYER, TurnPlayerPayload, UPDATE_SCORE, UPDATE_TRAP_IMMUNITY, UpdateScorePayload, UpdateTrapImmunityPayload } from "./playerActions"
+import { 
+    GRID_SIZE,
+    OBSTACLE,
+    PlayerDirection,
+    TRAP,
+    TREASURE 
+} from "../../../server/game/constants"
+import { 
+    ADD_PLAYER,
+    AddPlayerPayload,
+    MOVE_PLAYER,
+    MovePlayerPayload,
+    PlayerActions,
+    REMOVE_PLAYER,
+    RemovePlayerPayload,
+    TURN_PLAYER,
+    TurnPlayerPayload,
+    UPDATE_SCORE,
+    UPDATE_TRAP_IMMUNITY,
+    UpdateScorePayload,
+    UpdateTrapImmunityPayload 
+} from "./playerActions"
 
 export interface Player {
-    id: string;
-    x: number;
-    y: number;
-    direction: PlayerDirection;
-    score: number;
-    username: string;
-    status: 'idle' | 'moved' | 'hitTrap' | 'hitObstacle' | 'foundTreasure' | 'outOfBounds';
-    trapImmunity: number;
+    id              : string;
+    x               : number;
+    y               : number;
+    direction       : PlayerDirection;
+    score           : number;
+    username        : string;
+    status          : 'idle' | 'moved' | 'hitTrap' | 'hitObstacle' | 'foundTreasure' | 'outOfBounds';
+    trapImmunity    : number;
 }
 
 const initialState: Map<string, Player> = new Map();

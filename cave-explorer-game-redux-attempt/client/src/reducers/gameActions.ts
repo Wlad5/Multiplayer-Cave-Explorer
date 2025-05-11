@@ -1,15 +1,15 @@
 import { Player } from "./playerReducer";
 
-export const START_GAME     = 'START_GAME';
-export const END_GAME       = 'END_GAME';
-export const SHOW_MESSAGE   = 'SHOW_MESSAGE';
-export const EXIT_GAME      = 'EXIT_GAME';
-export const SET_WAITING_PLAYERS = 'SET_WAITING_PLAYERS';
-export const SET_CURRENT_PLAYER = 'SET_CURRENT_PLAYER';
-export const SET_GAME_TIMER = 'SET_GAME_TIMER';
-export const SET_TURN_TIMER = 'SET_TURN_TIMER';
-export const SET_MOVE_MADE  = 'SET_MOVE_MADE';
-export const SET_ACTIVE_GAMES = 'SET_ACTIVE_GAMES';
+export const START_GAME             = 'START_GAME';
+export const END_GAME               = 'END_GAME';
+export const SHOW_MESSAGE           = 'SHOW_MESSAGE';
+export const EXIT_GAME              = 'EXIT_GAME';
+export const SET_WAITING_PLAYERS    = 'SET_WAITING_PLAYERS';
+export const SET_CURRENT_PLAYER     = 'SET_CURRENT_PLAYER';
+export const SET_GAME_TIMER         = 'SET_GAME_TIMER';
+export const SET_TURN_TIMER         = 'SET_TURN_TIMER';
+export const SET_MOVE_MADE          = 'SET_MOVE_MADE';
+export const SET_ACTIVE_GAMES       = 'SET_ACTIVE_GAMES';
 
 export interface ShowMessagePayload {
     message: string;
@@ -32,8 +32,6 @@ export interface SetTurnTimerPayload {
 export interface SetMoveMadePayload {
     moveMade: boolean;
 }
-
-
 
 export interface SetActiveGamesPayload {
     activeGames: string[];
@@ -113,17 +111,17 @@ export const setActiveGamesAC = (activeGames: string[]) => ({
     }
 })
 
-export type StartGame       = ReturnType<typeof startGameAC>
-export type ExitGame        = ReturnType<typeof exitGameAC>
-export type EndGame         = ReturnType<typeof endGameAC>
-export type ShowMessage     = ReturnType<typeof showMessageAC>
-export type SetWaitingPlayers = ReturnType<typeof setWaitingPlayersAC>
-export type SetGameTimer    = ReturnType<typeof setGameTimerAC>
-export type SetTurnTimer    = ReturnType<typeof setTurnTimerAC>
-export type SetMoveMade     = ReturnType<typeof setMoveMadeAC>
-export type SetCurrentPlayer = ReturnType<typeof setCurrentPlayerAC>
-export type SetActiveGames  = ReturnType<typeof setActiveGamesAC>
-export type GameActions     = 
+export type StartGame           = ReturnType<typeof startGameAC>
+export type ExitGame            = ReturnType<typeof exitGameAC>
+export type EndGame             = ReturnType<typeof endGameAC>
+export type ShowMessage         = ReturnType<typeof showMessageAC>
+export type SetWaitingPlayers   = ReturnType<typeof setWaitingPlayersAC>
+export type SetGameTimer        = ReturnType<typeof setGameTimerAC>
+export type SetTurnTimer        = ReturnType<typeof setTurnTimerAC>
+export type SetMoveMade         = ReturnType<typeof setMoveMadeAC>
+export type SetCurrentPlayer    = ReturnType<typeof setCurrentPlayerAC>
+export type SetActiveGames      = ReturnType<typeof setActiveGamesAC>
+export type GameActions         = 
     | StartGame
     | ExitGame
     | EndGame

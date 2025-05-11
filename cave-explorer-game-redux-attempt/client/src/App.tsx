@@ -34,19 +34,23 @@ import { Controls } from "./components/control/Controls";
 const socket = io('http://localhost:3000');
 
 function App() {
-	const dispatch: AppDispatch = useDispatch();
-	const [username, setUsername] = useState('');
-	const [showLeaderboard, setShowLeaderboard] = useState(false); // New state
-	const players = useSelector((state: RootState) => state.player);
-	const grid = useSelector((state: RootState) => state.grid.grid);
-	const message = useSelector((state: RootState) => state.game.message);
-	const gameStatus = useSelector((state: RootState) => state.game.gameStatus);
-	const activeGames = useSelector((state: RootState) => state.game.activeGames);
-	const gameTimeLeft = useSelector((state: RootState) => state.game.gameTimeLeft);
-	const turnTimeLeft = useSelector((state: RootState) => state.game.turnTimeLeft);
-	const currentPlayer = useSelector((state: RootState) => state.game.currentPlayer);
-	const waitingPlayers = useSelector((state: RootState) => state.game.waitingPlayers);
-	const leaderBoard = useSelector((state: RootState) => state.game.leaderBoard);
+	// const [showLeaderboard, setShowLeaderboard] = useState(false);
+	const dispatch: AppDispatch 	= useDispatch();
+	const [username, setUsername] 	= useState('');
+	const players 					= useSelector((state: RootState) => state.player);
+	const grid 						= useSelector((state: RootState) => state.grid.grid);
+	const message 					= useSelector((state: RootState) => state.game.message);
+	const gameStatus 				= useSelector((state: RootState) => state.game.gameStatus);
+	const activeGames 				= useSelector((state: RootState) => state.game.activeGames);
+	const gameTimeLeft 				= useSelector((state: RootState) => state.game.gameTimeLeft);
+	const turnTimeLeft 				= useSelector((state: RootState) => state.game.turnTimeLeft);
+	const currentPlayer 			= useSelector((state: RootState) => state.game.currentPlayer);
+	const waitingPlayers 			= useSelector((state: RootState) => state.game.waitingPlayers);
+	const leaderBoard 				= useSelector((state: RootState) => state.game.leaderBoard);
+	const playerScore 				= players.get(socket.id!)?.score 		|| 0;
+	const playerUsername 			= players.get(socket.id!)?.username 	|| username;
+	const playerTrapImmunity 		= players.get(socket.id!)?.trapImmunity || 0;
+	const currentPlayerUsername 	= currentPlayer?.username 				|| username;
 
 	useEffect(() => {
 
@@ -116,8 +120,6 @@ function App() {
 		socket.on('gameEnded', (scores, winner) => {
 			dispatch(endGameAC(scores, winner));
 			dispatch(setWaitingPlayersAC(waitingPlayers));
-			setShowLeaderboard(true);
-			setTimeout(() => setShowLeaderboard(false), 5000);
 		});
 
 		return () => {
@@ -143,8 +145,29 @@ function App() {
 		});
 	}, [players])
 
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			switch (e.key) {
+				case 'ArrowUp':
+				case 'w': handleInput(PlayerDirection.NORTH); break;
+				case 'ArrowDown':
+				case 's': handleInput(PlayerDirection.SOUTH); break;
+				case 'ArrowLeft':
+				case 'a': handleInput(PlayerDirection.WEST); break;
+				case 'ArrowRight':
+				case 'd': handleInput(PlayerDirection.EAST); break;
+				case 'f': handleInput('F'); break;
+				case 'e': handleInput('E'); break;
+				default: console.log('Invalid key');
+			}
+		};
 
-	
+		window.addEventListener('keydown', handleKeyDown);
+		return () => {
+			window.removeEventListener('keydown', handleKeyDown);
+		};
+	});
+
 	const handleInput = (action: string) => {
 		let serverDirection = action;
 		switch (action) {
@@ -171,29 +194,6 @@ function App() {
 				console.log('Invalid move');
 		}
 	};
-
-	useEffect(() => {
-		const handleKeyDown = (e: KeyboardEvent) => {
-			switch (e.key) {
-				case 'ArrowUp':
-				case 'w': handleInput(PlayerDirection.NORTH); break;
-				case 'ArrowDown':
-				case 's': handleInput(PlayerDirection.SOUTH); break;
-				case 'ArrowLeft':
-				case 'a': handleInput(PlayerDirection.WEST); break;
-				case 'ArrowRight':
-				case 'd': handleInput(PlayerDirection.EAST); break;
-				case 'f': handleInput('F'); break;
-				case 'e': handleInput('E'); break;
-				default: console.log('Invalid key');
-			}
-		};
-
-		window.addEventListener('keydown', handleKeyDown);
-		return () => {
-			window.removeEventListener('keydown', handleKeyDown);
-		};
-	});
 
 	const play = () => {
 		if (username.trim()) {
@@ -243,26 +243,10 @@ function App() {
 		dispatch(exitGameAC());
 		socket.emit('leaveGame', { playerId: socket.id });
 	}
-	const playerScore = players.get(socket.id!)?.score || 0;
-	const playerUsername = players.get(socket.id!)?.username || username;
-	const currentPlayerUsername = currentPlayer?.username || username;
-	const playerTrapImmunity = players.get(socket.id!)?.trapImmunity || 0;
 
 	return (
 		<div className="app">
-			{showLeaderboard ? (
-				<div className="leaderBoard">
-					{leaderBoard && leaderBoard.length > 0 ? (
-						leaderBoard.map((player, index) => (
-							<div key={player.playerId || index}>
-								{player.username || 'Unknown'}: {player.score || 0}
-							</div>
-						))
-					) : (
-						<div>No players in the leaderboard.</div>
-					)}
-				</div>
-			) : gameStatus === 'not_started' || gameStatus === 'ended' ? (
+			{gameStatus === 'not_started' || gameStatus === 'ended' ? (
 				<StartScreen
 					play={play}
 					join={join}
@@ -278,24 +262,32 @@ function App() {
 						<div>Game Time Left: {gameTimeLeft / 1000}s</div>
 						<div>Turn Time Left: {turnTimeLeft / 1000}s</div>
 					</div>
-
 					<div className="current-player-info">
 						It is {currentPlayerUsername}'s turn!
 					</div>
-
 					<div className="game-board-container">
 						<Gameboard exit={exitGame} />
 					</div>
-
 					{message && <div className="message-area">{message}</div>}
-
 					<div className="controls-container">
 						<Controls handleInput={handleInput} />
 					</div>
-
 					<div className="player-stats">
 						<div>{`${playerUsername}: ${playerScore}`}</div>
 						<div>{`Trap Immunity: ${playerTrapImmunity}`}</div>
+					</div>
+					{/* Always show the leaderboard */}
+					<div className="leaderBoard">
+						<h2>Leaderboard</h2>
+						{leaderBoard && leaderBoard.length > 0 ? (
+							leaderBoard.map((player, index) => (
+								<div key={player.playerId || index}>
+									{player.username || 'Unknown'}: {player.score || 0}
+								</div>
+							))
+						) : (
+							<div>No players in the leaderboard.</div>
+						)}
 					</div>
 				</>
 			)}

@@ -6,26 +6,26 @@ import { v4 } from "uuid";
 import { EMPTY_CELL, PlayerDirection } from "./game/constants";
 import { Player } from "./game/Player";
 
-const app = express();
-const port = 3000;
-const httpServer = createServer(app);
-const io = new Server(httpServer, {
+const app           = express();
+const port          = 3000;
+const httpServer    = createServer(app);
+const io            = new Server(httpServer, {
     cors: {
         origin: "http://localhost:5173",
         methods: ["GET", "POST"],
     },
 });
-const MIN_PLAYERS = 3;
-const games = new Map<string, Game>();
-const gameTimers = new Map<string, NodeJS.Timeout>();
-const gameTimeLeftMap = new Map<string, number>();
-const turnTimers = new Map<string, NodeJS.Timeout>();
-const turnTimeLeftMap = new Map<string, number>();
-const obstacleMovementTimersMap = new Map<string, NodeJS.Timeout>();
-const waitingPlayersMap = new Map<string, Player>();
-const playerGameMap = new Map<string, string>();
-const currentPlayerMap = new Map<string, string | null>();
-const disconnectedPlayers = new Map<
+const MIN_PLAYERS                   = 3;
+const games                         = new Map<string, Game>();
+const gameTimers                    = new Map<string, NodeJS.Timeout>();
+const gameTimeLeftMap               = new Map<string, number>();
+const turnTimers                    = new Map<string, NodeJS.Timeout>();
+const turnTimeLeftMap               = new Map<string, number>();
+const obstacleMovementTimersMap     = new Map<string, NodeJS.Timeout>();
+const waitingPlayersMap             = new Map<string, Player>();
+const playerGameMap                 = new Map<string, string>();
+const currentPlayerMap              = new Map<string, string | null>();
+const disconnectedPlayers           = new Map<
     string,
     {
         gameId: string;
@@ -494,7 +494,7 @@ io.on("connection", (socket) => {
     });
 });
 
-const startGameTimer = (gameId: string) => {
+const startGameTimer                = (gameId: string) => {
     if (gameTimers.has(gameId)) return;
     gameTimeLeftMap.set(gameId, 1 * 60 * 1000);
     const timer = setInterval(() => {
@@ -511,7 +511,7 @@ const startGameTimer = (gameId: string) => {
     gameTimers.set(gameId, timer);
 };
 
-const startTurnTimer = (playerId: string, gameId: string) => {
+const startTurnTimer                = (playerId: string, gameId: string) => {
     const gameTimeLeft = gameTimeLeftMap.get(gameId);
     if (gameTimeLeft! <= 0) {
         console.log("The game has ended!");
@@ -538,7 +538,7 @@ const startTurnTimer = (playerId: string, gameId: string) => {
     turnTimers.set(gameId, interval);
 };
 
-const nextPlayer = (gameId: string) => {
+const nextPlayer                    = (gameId: string) => {
     const game = games.get(gameId);
 
     const players = Array.from(game!.getPlayers().keys());
@@ -564,7 +564,7 @@ const nextPlayer = (gameId: string) => {
     startTurnTimer(nextPlayerId, gameId);
 };
 
-const endGame = (gameId: string) => {
+const endGame                       = (gameId: string) => {
     const game = games.get(gameId);
     let currentPlayerId = currentPlayerMap.get(gameId);
     if (!game) {
@@ -616,7 +616,7 @@ const endGame = (gameId: string) => {
     io.emit("activeGames", Array.from(games.keys()));
 };
 
-const startObstacleMovementTimer = (gameId: string) => {
+const startObstacleMovementTimer    = (gameId: string) => {
     if (obstacleMovementTimersMap.has(gameId)) return;
     const interval = setInterval(() => {
         const game = games.get(gameId);

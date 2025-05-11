@@ -1,11 +1,11 @@
 import { Player } from "./playerReducer";
 
-export const ADD_PLAYER     = 'ADD_PLAYER';
-export const REMOVE_PLAYER  = 'REMOVE_PLAYER';
-export const TURN_PLAYER    = 'TURN_PLAYER';
-export const MOVE_PLAYER    = 'MOVE_PLAYER';
-export const UPDATE_SCORE   = 'UPDATE_SCORE';
-export const UPDATE_TRAP_IMMUNITY = 'UPDATE_TRAP_IMMUNITY';
+export const ADD_PLAYER             = 'ADD_PLAYER';
+export const REMOVE_PLAYER          = 'REMOVE_PLAYER';
+export const TURN_PLAYER            = 'TURN_PLAYER';
+export const MOVE_PLAYER            = 'MOVE_PLAYER';
+export const UPDATE_SCORE           = 'UPDATE_SCORE';
+export const UPDATE_TRAP_IMMUNITY   = 'UPDATE_TRAP_IMMUNITY';
 
 export interface AddPlayerPayload  {
     player: Player
@@ -19,6 +19,7 @@ export interface TurnPlayerPayload {
     id: string;
     move: string;
 }
+
 export interface MovePlayerPayload {
     id: string;
     grid: string[][]
@@ -80,13 +81,13 @@ export const updateTrapImmunity = (id: string, trapImmunity: number) => ({
     }
 })
 
-export type AddPlayer   = ReturnType<typeof addPlayerAC>
-export type RemovePlayer = ReturnType<typeof removePlayerAC>
-export type TurnPlayer  = ReturnType<typeof turnPlayerAC>
-export type MovePlayer  = ReturnType<typeof movePlayerAC>
-export type UpdateScore = ReturnType<typeof updateScoreAC>
-export type UpdateTrapImmunity = ReturnType<typeof updateTrapImmunity>
-export type PlayerActions = 
+export type AddPlayer           = ReturnType<typeof addPlayerAC>
+export type RemovePlayer        = ReturnType<typeof removePlayerAC>
+export type TurnPlayer          = ReturnType<typeof turnPlayerAC>
+export type MovePlayer          = ReturnType<typeof movePlayerAC>
+export type UpdateScore         = ReturnType<typeof updateScoreAC>
+export type UpdateTrapImmunity  = ReturnType<typeof updateTrapImmunity>
+export type PlayerActions       = 
     | AddPlayer
     | RemovePlayer
     | TurnPlayer

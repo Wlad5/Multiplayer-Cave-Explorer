@@ -11,21 +11,21 @@ import {
 } from "./gridActions";
 
 export interface GridState {
-    grid:       string[][];
-    hiddenGrid: string[][];
-    players:    {playerId: number; x: number; y: number; direction: PlayerDirection}[];
-    traps:      {x: number; y: number}[];
-    obstacles:  {x: number; y: number}[];
-    treasures:  {x: number; y: number}[];
+    grid            : string[][];
+    hiddenGrid      : string[][];
+    players         : {playerId: number; x: number; y: number; direction: PlayerDirection}[];
+    traps           : {x: number; y: number}[];
+    obstacles       : {x: number; y: number}[];
+    treasures       : {x: number; y: number}[];
 }
 
 const initialState: GridState = {
-    grid:       Array.from({length: GRID_SIZE}, () => Array(GRID_SIZE).fill(EMPTY_CELL)),
-    hiddenGrid: Array.from({length: GRID_SIZE}, () => Array(GRID_SIZE).fill(HIDDEN_CELL)),
-    players:    [],
-    traps:      [],
-    obstacles:  [],
-    treasures:  [],
+    grid        : Array.from({length: GRID_SIZE}, () => Array(GRID_SIZE).fill(EMPTY_CELL)),
+    hiddenGrid  : Array.from({length: GRID_SIZE}, () => Array(GRID_SIZE).fill(HIDDEN_CELL)),
+    players     : [],
+    traps       : [],
+    obstacles   : [],
+    treasures   : [],
 };
 
 export const gridReducer = (state: GridState = initialState, action: GridActions): GridState => {

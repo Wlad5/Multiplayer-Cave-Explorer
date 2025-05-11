@@ -11,15 +11,15 @@ import { PlayerActions } from './reducers/playerActions';
 export type AppActions = GameActions | GridActions | PlayerActions;
 
 export interface RootState {
-    grid: GridState;
-    player: Map<string, Player>;
-    game: GameState;
+    grid    : GridState;
+    player  : Map<string, Player>;
+    game    : GameState;
 }
 
 const rootReducer = combineReducers({
-    grid: gridReducer,
-    player: playerReducer,
-    game: gameReducer,
+    grid    : gridReducer,
+    player  : playerReducer,
+    game    : gameReducer,
 });
 
 export type AppThunk<ReturnType = void> = ThunkAction<

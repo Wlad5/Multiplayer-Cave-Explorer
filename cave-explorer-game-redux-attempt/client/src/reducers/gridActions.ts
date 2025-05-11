@@ -1,9 +1,9 @@
 export const INITIALIZE_GRID        = 'INITIALIZE_GRID'
 
 export interface InitializeGridPayload {
-    gridSize: number;
-    grid: string[][];
-    hiddenGrid: string[][];
+    gridSize    : number;
+    grid        : string[][];
+    hiddenGrid  : string[][];
 }
 
 export const initializeGridAC = (gridSize: number, initialGrid: string[][], initialHiddenGrid: string[][]) => ({
@@ -16,5 +16,5 @@ export const initializeGridAC = (gridSize: number, initialGrid: string[][], init
 })
 
 export type InitializeGrid      = ReturnType<typeof initializeGridAC>
-export type GridActions = 
+export type GridActions         = 
     | InitializeGrid

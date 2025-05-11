@@ -22,35 +22,35 @@ import {
 import { Player } from "./playerReducer";
 
 export interface GameState {
-    score: number;
-    gameStatus: 'not_started' | 'in_progress' | 'ended';
-    gameTimer: number | null;
-    gameTimeLeft: number;
-    turnTimer: number | null;
-    turnTimeLeft: number;
-    message?: string;
-    currentPlayer: Player | null;
-    playerMoved: boolean;
-    leaderBoard: {username: string,playerId: number, score: number}[] | [];
-    activeGames: string[] | [];
-    waitingPlayers: Map<string, Player>;
-    winner: {username: string, playerId: string, score: number} | null;
+    score               : number;
+    gameStatus          : 'not_started' | 'in_progress' | 'ended';
+    gameTimer           : number | null;
+    gameTimeLeft        : number;
+    turnTimer           : number | null;
+    turnTimeLeft        : number;
+    message?            : string;
+    currentPlayer       : Player | null;
+    playerMoved         : boolean;
+    leaderBoard         : {username: string,playerId: number, score: number}[] | [];
+    activeGames         : string[] | [];
+    waitingPlayers      : Map<string, Player>;
+    winner              : {username: string, playerId: string, score: number} | null;
 }
 
 export const initialState: GameState = {
-    score: 0,
-    gameStatus: 'not_started',
-    gameTimer: null,
-    gameTimeLeft: 1 * 60 * 1000,
-    turnTimer: null,
-    turnTimeLeft: 10000,
-    message: '',
-    currentPlayer: null,
-    playerMoved: false,
-    leaderBoard: [],
-    activeGames: [],
-    waitingPlayers: new Map<string, Player>(),
-    winner: null,
+    score           : 0,
+    gameStatus      : 'not_started',
+    gameTimer       : null,
+    gameTimeLeft    : 1 * 60 * 1000,
+    turnTimer       : null,
+    turnTimeLeft    : 10000,
+    message         : '',
+    currentPlayer   : null,
+    playerMoved     : false,
+    leaderBoard     : [],
+    activeGames     : [],
+    waitingPlayers  : new Map<string, Player>(),
+    winner          : null,
 }
 
 export const gameReducer = (state: GameState = initialState, action: GameActions): GameState => {
