@@ -12,9 +12,9 @@ import { Player } from "./Player";
 export class Game {
     private grid    : Grid;
     private players : Map<string, Player>;
-    constructor                         () {
-        this.grid = new Grid();
-        this.players = new Map<string, Player>();
+    constructor                         ()                                              {
+        this.grid       = new Grid();
+        this.players    = new Map<string, Player>();
         this.grid.placeRandomItems(TREASURE, 10);
         this.grid.placeRandomItems(TRAP, 10);
         this.grid.placeRandomItems(OBSTACLE, 7);
@@ -22,10 +22,10 @@ export class Game {
         this.grid.placeRandomItems(TWO_MOVES_IN_A_ROW, 10);
         this.players.forEach((player) => this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection()));
     }
-    public movePlayer                   (move: string, playerId: string): string {
+    public movePlayer                   (move: string, playerId: string): string        {
         const player = this.players.get(playerId);
         if (!player) {
-            return `Player not found!`;
+            throw new Error(`Player not found!`);
         }
         const prevX = player.getX();
         const prevY = player.getY();
@@ -54,7 +54,7 @@ export class Game {
         this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection());
         return resultMessage;
     }
-    public turnPlayer                   (direction: string, playerId: string): string {
+    public turnPlayer                   (direction: string, playerId: string): string   {
         const player = this.players.get(playerId);
         if (!player) {
             return `Player not found!`;
@@ -72,10 +72,10 @@ export class Game {
         }
         return resultMessage;
     }
-    public addPlayer                    (playerId: string, username: string): void {
+    public addPlayer                    (playerId: string, username: string): void      {
         console.log(`Adding player with ID: ${playerId}`);
         if (this.players.has(playerId)) {
-            return;
+            throw new Error('Player with this ID already exists!');
         }
         let player: Player;
         let attempts = 0;
@@ -85,9 +85,9 @@ export class Game {
             this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection());
             attempts++;
         } while (
-            this.grid.isObstacle(player.getX(), player.getY()) &&
-            Array.from(this.players.values()).some(p => p.getX() === player.getX() && p.getY() === player.getY()) &&
-            this.grid.isTrap(player.getX(), player.getY()) &&
+            this.grid.isObstacle(player.getX(), player.getY()) ||
+            Array.from(this.players.values()).some(p => p.getX() === player.getX() && p.getY() === player.getY()) ||
+            this.grid.isTrap(player.getX(), player.getY()) ||
             this.grid.isTreasure(player.getX(), player.getY()) &&
             attempts < maxAttempts
         );
@@ -99,23 +99,26 @@ export class Game {
         this.players.set(playerId, player);
         console.log(this.players);
     }
-    public removePlayer                 (playerId: string): void {
+    public removePlayer                 (playerId: string): void                        {
         const player = this.players.get(playerId);
+        if (!player) {
+            throw new Error(`Player with ID ${playerId} not found`);
+        }
         if (player) {
             this.grid.clearCell(player.getX(), player.getY());
             this.players.delete(playerId);
         }
     }
-    public getGrid                      () {
+    public getGrid                      ()                                              {
         return this.grid;
     }
-    public getHiddenGrid                () {
+    public getHiddenGrid                ()                                              {
         return this.grid.hiddenGrid;
     }
-    public getPlayers                   () {
+    public getPlayers                   ()                                              {
         return this.players;
     }
-    public handleHitTrap                (player: Player): string {
+    public handleHitTrap                (player: Player): string                        {
         if (player.getTrapImmunity() > 0) {
             player.setTrapImmunity(player.getTrapImmunity() - 1);
             player.subtractScore(0);
@@ -126,49 +129,49 @@ export class Game {
             return `You hit a trap! -10 points deducted.`;
         }
     }
-    public handleFoundTreasure          (player: Player, ): string {
+    public handleFoundTreasure          (player: Player, ): string                      {
         player.addScore(5);
         console.log(`Player ${player.getId()} has ${player.getScore()} points`);
         return `You found treasure! +5 points added.`;
     }
-    public handleHitObstacle            (): string {
+    public handleHitObstacle            (): string                                      {
         return `There is an obstacle in the way! You cannot move forward.`;
     }
-    public handleCellWithAnotherPlayer  (): string {
+    public handleCellWithAnotherPlayer  (): string                                      {
         return `There is another player in the way! You cannot move forward.`;
     }
-    public handleIsTrapImmunityPowerUp  (): string {
+    public handleIsTrapImmunityPowerUp  (): string                                      {
         return `You found a trap immunity power-up! You can now move through 3 traps.`;
     }
-    public handleOutOfBounds            (): string {
+    public handleOutOfBounds            (): string                                      {
         return `Cannot move forward! Out of bounds.`;
     }
-    public handleX2PowerUp              (player: Player): string {
+    public handleX2PowerUp              (player: Player): string                        {
         player.setHasX2PowerUp(true);
         return `You found a power-up! You can now move twice in a row!`;
     }
-    public handleExitGame               (): string {
+    public handleExitGame               (): string                                      {
         return `Exitting the game`;
     }
-    public handleInvalidCommand         (): string {
+    public handleInvalidCommand         (): string                                      {
         return `Invalid command! Use W, A, S, D, the Arrow Keys, E or F.`;
     }
-    public handleDirectionNorth         (player: Player): string {
+    public handleDirectionNorth         (player: Player): string                        {
         player.turn(PlayerDirection.NORTH);
         this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection());
         return `Player turned NORTH.`;
     }
-    public handleDirectionSouth         (player: Player): string {
+    public handleDirectionSouth         (player: Player): string                        {
         player.turn(PlayerDirection.SOUTH);
         this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection());
         return `Player turned SOUTH.`;
     }
-    public handleDirectionWest          (player: Player): string {
+    public handleDirectionWest          (player: Player): string                        {
         player.turn(PlayerDirection.WEST);
         this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection());
         return `Player turned WEST.`;
     }
-    public handleDirectionEast          (player: Player): string {
+    public handleDirectionEast          (player: Player): string                        {
         player.turn(PlayerDirection.EAST);
         this.grid.revealCurrentCell(player.getX(), player.getY(), player.getDirection());
         return `Player turned EAST.`;

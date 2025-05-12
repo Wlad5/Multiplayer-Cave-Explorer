@@ -144,17 +144,37 @@ io.on("connection", (socket) => {
 
             let countdown = 3;
             const countdownInterval = setInterval(() => {
-                io.to(gameId).emit(
-                    "message",
-                    `Game starting in ${countdown}...`
-                );
+                io.to(gameId).emit("message", `Game starting in ${countdown}...`);
                 countdown--;
+
                 if (countdown < 0) {
-                    clearInterval(countdownInterval);
-                    io.to(gameId).emit("message", `Game started!`);
-                    io.to(gameId).emit("gameState", newGame.getHiddenGrid());
+                clearInterval(countdownInterval);
+
+                io.to(gameId).emit("message", `Game started!`);
+                io.to(gameId).emit("gameState", newGame.getHiddenGrid());
+
+            setTimeout(() => {
+                const playerIds = Array.from(newGame.getPlayers().keys());
+                const currentPlayerId = playerIds[0]; // First player to start
+                currentPlayerMap.set(gameId, currentPlayerId);
+                const currentPlayer = newGame.getPlayers().get(currentPlayerId);
+
+                if (currentPlayer) {
+                    io.to(gameId).emit("currentPlayer", {
+                    id: currentPlayerId,
+                    x: currentPlayer.getX(),
+                    y: currentPlayer.getY(),
+                    direction: currentPlayer.getDirection(),
+                    score: currentPlayer.getScore(),
+                    username: currentPlayer.getUsername(),
+                    trapImmunity: currentPlayer.getTrapImmunity(),
+                    });
+
+                    startTurnTimer(currentPlayerId, gameId);
                 }
-            }, 1000);
+            }, 500); 
+        }
+    }, 1000);
         }
     });
 
