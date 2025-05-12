@@ -28,15 +28,20 @@ export interface Player {
     direction       : PlayerDirection;
     score           : number;
     username        : string;
-    status          : 'idle' | 'moved' | 'hitTrap' | 'hitObstacle' | 'foundTreasure' | 'outOfBounds';
     trapImmunity    : number;
+    status          : 'idle'
+                    | 'moved' 
+                    | 'hitTrap' 
+                    | 'hitObstacle' 
+                    | 'foundTreasure' 
+                    | 'outOfBounds';
 }
 
-const initialState: Map<string, Player> = new Map();
+export const initialState: Map<string, Player> = new Map();
 
 export const playerReducer = (state: Map<string, Player> = initialState, action: PlayerActions): Map<string, Player> => {
     switch(action.type) {
-        case ADD_PLAYER: {
+        case ADD_PLAYER             : {
             if ('payload' in action) {
                 const {player} = action.payload as AddPlayerPayload;
                 if (player.id) {
@@ -49,7 +54,7 @@ export const playerReducer = (state: Map<string, Player> = initialState, action:
             }
             return state;
         }
-        case REMOVE_PLAYER: {
+        case REMOVE_PLAYER          : {
             if ('payload' in action) {
                 const {id} = action.payload as RemovePlayerPayload;
                 if (id) {
@@ -58,7 +63,7 @@ export const playerReducer = (state: Map<string, Player> = initialState, action:
             }
             return new Map(state);
         }
-        case TURN_PLAYER: {
+        case TURN_PLAYER            : {
             const { id, move } = action.payload as TurnPlayerPayload;
             const player = state.get(id);
                 if (player) {
@@ -85,7 +90,7 @@ export const playerReducer = (state: Map<string, Player> = initialState, action:
                 }
             return new Map(state);
         }
-        case MOVE_PLAYER: {
+        case MOVE_PLAYER            : {
             const { id, grid } = action.payload as MovePlayerPayload;
             const player = state.get(id);
         
@@ -165,7 +170,7 @@ export const playerReducer = (state: Map<string, Player> = initialState, action:
         
             return new Map(state);
         }
-        case UPDATE_SCORE: {
+        case UPDATE_SCORE           : {
             const {id, score} = action.payload as UpdateScorePayload;
             const player = state.get(id);
                 if (player) {
@@ -176,7 +181,7 @@ export const playerReducer = (state: Map<string, Player> = initialState, action:
                 }
             return new Map(state);
         }
-        case UPDATE_TRAP_IMMUNITY: {
+        case UPDATE_TRAP_IMMUNITY   : {
             if ('payload' in action) {
                 const {id, trapImmunity} = action.payload as UpdateTrapImmunityPayload;
                 const player = state.get(id);
