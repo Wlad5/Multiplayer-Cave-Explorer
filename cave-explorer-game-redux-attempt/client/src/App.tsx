@@ -4,7 +4,7 @@ import {
 } from "react-redux";
 import { AppDispatch, RootState } from "./store";
 import { useEffect, useState } from "react";
-import { io } from "socket.io-client";
+import io from "socket.io-client";
 import { initializeGridAC } from "./reducers/gridActions";
 import {
 	endGameAC,
@@ -47,15 +47,16 @@ function App() {
 	const currentPlayer = useSelector((state: RootState) => state.game.currentPlayer);
 	const waitingPlayers = useSelector((state: RootState) => state.game.waitingPlayers);
 	const leaderBoard = useSelector((state: RootState) => state.game.leaderBoard);
+	
 
 	useEffect(() => {
 
-		socket.on('waitingPlayers', (waitingPlayers) => {
+		socket.on('waitingPlayers', (waitingPlayers: Iterable<readonly [string, Player]> | null | undefined) => {
 			const playersMap = new Map<string, Player>(waitingPlayers);
 			dispatch(setWaitingPlayersAC(playersMap));
 		});
 
-		socket.on('gameJoined', ({ gameId }) => {
+		socket.on('gameJoined', ({ gameId }: { gameId: string }) => {
 			console.log(`Joined game: ${gameId}`);
 			dispatch(startGameAC());
 		})
@@ -64,33 +65,33 @@ function App() {
 			dispatch(setActiveGamesAC(activeGames));
 		})
 
-		socket.on('playerAdded', (newPlayer) => {
+		socket.on('playerAdded', (newPlayer: Player) => {
 			console.log(`New player added: ${newPlayer}`);
 			dispatch(addPlayerAC(newPlayer));
 		})
 
-		socket.on('playerJoined', (players) => {
+		socket.on('playerJoined', (players: Player[]) => {
 			console.log('Updated players list:', players);
 			players.forEach((player: Player) => {
 				dispatch(addPlayerAC(player));
 			});
 		});
 
-		socket.on('playerUpdated', (updatedPlayer) => {
+		socket.on('playerUpdated', (updatedPlayer: { id: string; score: number; trapImmunity: number; }) => {
 			console.log(`Player updated: ${updatedPlayer}`);
 			dispatch(updateScoreAC(updatedPlayer.id, updatedPlayer.score));
 			dispatch(updateTrapImmunity(updatedPlayer.id, updatedPlayer.trapImmunity));
 		});
 
-		socket.on('currentPlayer', (player) => {
+		socket.on('currentPlayer', (player: Player | null) => {
 			dispatch(setCurrentPlayerAC(player));
 		});
 
-		socket.on('gameTimeUpdate', (timeLeft) => {
+		socket.on('gameTimeUpdate', (timeLeft: number) => {
 			dispatch(setGameTimerAC(timeLeft));
 		});
 
-		socket.on('turnTimerUpdate', ({ playerId, timeLeft }) => {
+		socket.on('turnTimerUpdate', ({ playerId, timeLeft }: { playerId: string; timeLeft: number }) => {
 			if (playerId === socket.id) {
 				dispatch(setTurnTimerAC(timeLeft));
 			}
@@ -100,20 +101,24 @@ function App() {
 			dispatch(removePlayerAC(playerId));
 		});
 
-		socket.on('gameState', (updatedGrid) => {
-			dispatch(initializeGridAC(updatedGrid.length, updatedGrid, updatedGrid));
+		socket.on('gameState', (updatedGrid: string | any[]) => {
+			if (Array.isArray(updatedGrid) && updatedGrid.every(row => Array.isArray(row))) {
+				dispatch(initializeGridAC(updatedGrid.length, updatedGrid, updatedGrid));
+			} else {
+				console.error('Invalid grid format received:', updatedGrid);
+			}
 		});
 
-		socket.on('message', (message) => {
+		socket.on('message', (message: string) => {
 			dispatch(showMessageAC(message));
 		});
 
-		socket.on('gameCreated', ({ gameId }) => {
+		socket.on('gameCreated', ({ gameId }: { gameId: string }) => {
 			socket.emit('getCurrentPlayer', { gameId });
 			dispatch(startGameAC());
 		});
 
-		socket.on('gameEnded', (scores, winner) => {
+		socket.on('gameEnded', (scores: { username: string; playerId: number; score: number; }[], winner: { username: string; playerId: string; score: number; }) => {
 			dispatch(endGameAC(scores, winner));
 			dispatch(setWaitingPlayersAC(waitingPlayers));
 			setShowLeaderboard(true);
@@ -250,55 +255,60 @@ function App() {
 
 	return (
 		<div className="app">
-			{showLeaderboard ? (
-				<div className="leaderBoard">
-					{leaderBoard && leaderBoard.length > 0 ? (
-						leaderBoard.map((player, index) => (
-							<div key={player.playerId || index}>
-								{player.username || 'Unknown'}: {player.score || 0}
-							</div>
-						))
-					) : (
-						<div>No players in the leaderboard.</div>
+			<header className="header">
+				<div className="timers">
+					<div>Game Time Left: {gameTimeLeft / 1000}s</div>
+					{turnTimeLeft < 1000 * 1000 && ( // hide it if it's extremely high or unset
+						<div>Turn Time Left: {turnTimeLeft / 1000}s</div>
 					)}
 				</div>
-			) : gameStatus === 'not_started' || gameStatus === 'ended' ? (
-				<StartScreen
-					play={play}
-					join={join}
-					joinActiveGame={joinActiveGame}
-					username={username}
-					setUsername={setUsername}
-					activeGames={activeGames}
-					leaveWaitingRoom={leaveWaitingRoom}
-				/>
-			) : (
-				<>
-					<div className="timers">
-						<div>Game Time Left: {gameTimeLeft / 1000}s</div>
-						<div>Turn Time Left: {turnTimeLeft / 1000}s</div>
-					</div>
+				<div className="current-player-info">
+					It is {currentPlayerUsername}'s turn!
+				</div>
+			</header>
 
-					<div className="current-player-info">
-						It is {currentPlayerUsername}'s turn!
+			<main className="main-content">
+				{showLeaderboard ? (
+					<div className="leaderBoard">
+						{leaderBoard && leaderBoard.length > 0 ? (
+							leaderBoard.map((player, index) => (
+								<div key={player.playerId || index}>
+									{player.username || 'Unknown'}: {player.score || 0}
+								</div>
+							))
+						) : (
+							<div>No players in the leaderboard.</div>
+						)}
 					</div>
+				) : gameStatus === 'not_started' || gameStatus === 'ended' ? (
+					<StartScreen
+						play={play}
+						join={join}
+						joinActiveGame={joinActiveGame}
+						username={username}
+						setUsername={setUsername}
+						activeGames={activeGames}
+						leaveWaitingRoom={leaveWaitingRoom}
+					/>
+				) : (
+					<>
+						<div className="game-board-container">
+							<Gameboard exit={exitGame} />
+						</div>
 
-					<div className="game-board-container">
-						<Gameboard exit={exitGame} />
-					</div>
+						{message && <div className="message-area">{message}</div>}
 
-					{message && <div className="message-area">{message}</div>}
+						<div className="controls-container">
+							<Controls handleInput={handleInput} />
+						</div>
 
-					<div className="controls-container">
-						<Controls handleInput={handleInput} />
-					</div>
-
-					<div className="player-stats">
-						<div>{`${playerUsername}: ${playerScore}`}</div>
-						<div>{`Trap Immunity: ${playerTrapImmunity}`}</div>
-					</div>
-				</>
-			)}
+						<div className="player-stats">
+							<div>{`${playerUsername}: ${playerScore}`}</div>
+							<div>{`Trap Immunity: ${playerTrapImmunity}`}</div>
+						</div>
+					</>
+				)}
+			</main>
 		</div>
 	);
 }

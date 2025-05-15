@@ -4,7 +4,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    height: 100vh;
+    height: 50vh;
     padding: 20px;
   }
   
@@ -16,6 +16,7 @@
     padding: 10px;
     font-size: 16px;
     text-align: center;
+    color: #f9f9f9;
   }
   
   /* Buttons below the username input */
@@ -34,15 +35,16 @@
   
   /* Active games list below the buttons */
   .active-games-list {
-    margin-top: 20px;
-    width: 80%;
+    padding-top: 50px;    
+    width: 90%; /* Expand the width for better visibility */
     max-width: 400px;
     text-align: left;
     border: 1px solid #ccc;
     border-radius: 5px;
-    padding: 10px;
-    overflow-y: auto;
-    max-height: 200px;
+    padding: 15px; /* Add more padding for better spacing */
+    overflow-y: auto; /* Retain scroll for overflow content */
+    max-height: 500px; /* Further increase the height to display more games */
+    background-color: #f9f9f9; /* Optional: Add a background color */
   }
   
   /* Waiting room container */

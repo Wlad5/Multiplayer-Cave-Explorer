@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 html, body {
     height: 100%;
     display: flex;
@@ -9,25 +13,36 @@ html, body {
     text-align: center;
 }
 
-.game-board {
-    display: inline-block;
+.game-board-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     margin: 20px;
 }
 
-.row {
-    display: flex;
+.game-board {
+    display: grid;
+    grid-template-columns: repeat(10, 40px); /* Adjust size as needed */
+    grid-template-rows: repeat(10, 40px); /* Adjust size as needed */
+    gap: 0;
+    border: 1px solid #000;
+    width: fit-content; /* Ensure the grid fits its content */
+    height: fit-content;
 }
 
 .cell {
-    /* margin: 1px; */
-    width: 20px;
-    height: 20px;
+    width: 40px; /* Explicitly set width */
+    height: 40px; /* Explicitly set height */
     border: 1px solid #000;
     display: flex;
     align-items: center;
     justify-content: center;
     color: rgb(0, 0, 255);
-    background-color: rgb(3, 3, 3);
+    background-color: rgb(66, 46, 46);
+}
+
+.row {
+    display: flex;
 }
 
 .controls {
@@ -39,12 +54,11 @@ button {
     padding: 10px;
 }
 
-
 /* Game Timer and Turn Timer */
 .timers {
     display: flex;
     justify-content: space-around;
-    margin-top: 10px;
+    margin-top: 150px;
     font-size: 18px;
     font-weight: bold;
 }
@@ -52,16 +66,9 @@ button {
 /* Current Player Info */
 .current-player-info {
     margin-top: 10px;
-    font-size: 16px;
+    font-size: 16px;    
     font-weight: bold;
     color: #333;
-}
-
-/* Game Board */
-.game-board-container {
-    display: flex;
-    justify-content: center;
-    margin: 20px 0;
 }
 
 /* Message Area */
@@ -99,7 +106,215 @@ button {
     text-align: center;
 }
 
+.exitBtn {
+    align-self: flex-start;
+    margin-bottom: 10px;
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
 .leaderBoard {
     border: 1px solid red; /* Debugging */
     background-color: lightyellow; /* Debugging */
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #212529;
+    background-color: #f7f7f7;
+    background-image: url('./src/assets/background.png'); /* Replace with the new background image */
+    background-size: cover; /* Ensure the image covers the entire page */
+    background-position: center; /* Center the image */
+    background-repeat: no-repeat; /* Prevent the image from repeating */
+}
+
+/* Add a white border to all text that is not within a button */
+body *:not(button) {
+    text-shadow: 0 0 3px #fff, 0 0 5px #fff; /* Create a white border effect */
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between; /* Ensure space between left and right elements */
+    align-items: center; /* Vertically align items */
+}
+
+/*
+headeer top
+*/
+.topbar{
+  background-color: #212529;
+  padding: 0;
+}
+
+.topbar .container .row {
+  margin:-7px;
+  padding:0;
+}
+
+.topbar .container .row .col-md-12 { 
+  padding:0;
+}
+
+.topbar p{
+  margin:0;
+  display:inline-block;
+  font-size: 13px;
+  color: #f1f6ff;
+}
+
+.topbar p > i{
+  margin-right:5px;
+}
+.topbar p:last-child{
+  text-align:right;
+} 
+
+header .navbar {
+    margin-bottom: 0;
+}
+
+header.header {
+    position: sticky;
+    top: 0;
+    background-color: #f7f7f7;
+    z-index: 1000;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+main.main-content {
+    padding: 20px;
+}
+
+.topbar li.topbar {
+    display: inline;
+    padding-right: 18px;
+    line-height: 52px;
+    transition: all .3s linear;
+}
+
+.topbar li.topbar:hover {
+    color: #1bbde8;
+}
+
+.topbar ul.info i {
+    color: #beacac;
+    font-style: normal;
+    margin-right: 8px;
+    display: inline-block;
+    position: relative;
+    top: 4px;
+}
+
+.topbar ul.info li {
+    float: right;
+    padding-left: 30px;
+    color: #ffffff;
+    font-size: 13px;
+    line-height: 44px;
+}
+
+.topbar ul.info i span {
+    color: #aaa;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 50px;
+    padding-left: 18px;
+}
+
+ul.social-network {
+  border:none;
+  margin:0;
+  padding:0;
+}
+
+ul.social-network li {
+  border:none;  
+  margin:0;
+}
+
+ul.social-network li i {
+  margin:0;
+}
+
+ul.social-network li {
+    display:inline;
+    margin: 0 5px;
+    border: 0px solid #2D2D2D;
+    padding: 5px 0 0;
+    width: 32px;
+    display: inline-block;
+    text-align: center;
+    height: 32px;
+    vertical-align: baseline;
+    color: #000;
+}
+
+ul.social-network {
+  list-style: none;
+  margin: 5px 0 10px -25px;
+  float: right;
+}
+
+.waves-effect {
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+    overflow: hidden;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    vertical-align: middle;
+    z-index: 1;
+    will-change: opacity, transform;
+    transition: .3s ease-out;
+    color: #fff;
+}
+a {
+  color: #0a0a0a;
+  text-decoration: none;
+}
+
+li {
+    list-style-type: none;
+}
+.bg-image-full {
+    background-position: center center;
+    background-repeat: no-repeat;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    background-size: cover;
+    -o-background-size: cover;
+}
+.bg-dark {
+    background-color: #222!important;
+}
+
+.mx-background-top-linear {
+    background: -webkit-linear-gradient(45deg, #ca5444 48%, #1b1e21 48%);
+    background: -webkit-linear-gradient(left, #ca5444 48%, #1b1e21 48%);
+    background: linear-gradient(45deg, #ca5444 48%, #1b1e21 48%);
+}
+
+.ruc {
+    position: relative;
+    padding-left: 0;
+    margin-left: 0;
+    display: inline-block;
+    align-self: flex-start; /* Align to the start of the navbar */
+}
+
+
+.game-name {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ddb32a;
 }

@@ -7,42 +7,58 @@ interface GameBoardProps {
 }
 
 export const GameBoard: React.FC<GameBoardProps> = ({ exit }) => {
-  const hiddenGrid    = useSelector((state: RootState) => state.grid.hiddenGrid);
+  const hiddenGrid = useSelector((state: RootState) => state.grid.hiddenGrid);
   const currentPlayer = useSelector((state: RootState) => state.game.currentPlayer) as { x: number; y: number } | null;
-  
-  const renderGrid = () => {
-    return hiddenGrid.map((row, rowIndex) => (
-      <div key={rowIndex} className="row">
-        {row.map((cell, cellIndex) => {
-          const isCurrentPlayer =
-            rowIndex === currentPlayer?.x && cellIndex === currentPlayer?.y;
-          const cellClass = 
-            isCurrentPlayer
-              ? `${styles.currentPlayer} cell`
-              : cell === "^" || cell === ">" || cell === "v" || cell === "<"
-              ? `${styles.player} cell`
-              : cell === "T"
-              ? `${styles.treasure} cell`
-              : cell === "X"
-              ? `${styles.trap} cell`
-              : cell === "O"
-              ? `${styles.obstacle} cell`
-              : "cell";
 
-          return (
-            <span key={cellIndex} className={cellClass}>
-              {cell}
-            </span>
-          );
-        })}
-      </div>
-    ));
+  const getCellContent = (cell: string) => {
+    switch (cell) {
+      case "^":
+        return "⬆️"; // North
+      case ">":
+        return "➡️"; // East
+      case "v":
+        return "⬇️"; // South
+      case "<":
+        return "⬅️"; // West
+      case "T":
+        return "💎"; // Treasure
+      case "X":
+        return "💀"; // Trap
+      case "O":
+        return "🪨"; // Obstacle
+      case "?":
+        return "❔"; // Unknown cell
+      default:
+        return cell;
+    }
   };
 
   return (
-    <div className={styles.gameBoard}>
-      <button className={styles.exitBtn} onClick={exit}>X</button>
-      {renderGrid()}
+    <div className={styles.gameBoardContainer}>
+      <button className={styles.exitBtn} onClick={exit}>Exit Game</button>
+      <div
+        className={styles.gameBoard}
+        style={{
+          display: "grid",
+          gridTemplateColumns: `repeat(${hiddenGrid[0]?.length || 0}, 1fr)`,
+          gridTemplateRows: `repeat(${hiddenGrid.length || 0}, 1fr)`,
+        }}
+      >
+        {hiddenGrid.flatMap((row, rowIndex) =>
+          row.map((cell, cellIndex) => {
+            const isCurrentPlayer =
+              rowIndex === currentPlayer?.x && cellIndex === currentPlayer?.y;
+            return (
+              <div
+                key={`${rowIndex}-${cellIndex}`}
+                className={`cell ${isCurrentPlayer ? styles.currentPlayer : ""}`}
+              >
+                {getCellContent(cell)}
+              </div>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 };

@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { WaitingRoom } from "../waitingRoom/WaitingRoom";
 import styles from "./startScreen.module.css";
+import treasureHuntImage from '../../assets/treasurehunt.png';
 
 interface StartScreenProps {
     play: () => void;
@@ -52,7 +53,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
                 <WaitingRoom players={waitingPlayers} leaveWaitingRoom={handleLeaveWaitingRoom} />
             ) : (
                 <div className={styles["start-screen"]}>
-                    <h1 className={styles["start-screen-title"]}>Prepare for Treasure Hunt!</h1>
+                    <img src={treasureHuntImage} alt="Prepare for Treasure Hunt!" className={styles["start-screen-title"]} />
                     <div className={styles["username-container"]}>
                         <Username username={username} setUsername={setUsername} />
                     </div>

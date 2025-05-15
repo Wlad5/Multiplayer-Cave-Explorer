@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/material": "^7.1.0",
+    "bootstrap": "^5.3.6",
+    "socket.io-client": "^4.8.1"
+  },
+  "devDependencies": {
+    "@types/socket.io-client": "^1.4.36",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.1.6"
+  }
+}

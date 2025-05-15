@@ -4,8 +4,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  height: 100vh;
-  padding: 20px;
+  height: 30vh;
+  padding: 10px;
   text-align: center;
 }
 
@@ -19,7 +19,7 @@
 
 /* Player List */
 .waiting-players {
-  margin-top: 20px;
+  margin-top: 0px;
   width: 80%;
   max-width: 400px;
   text-align: left;
@@ -32,10 +32,12 @@
 }
 
 .player-username {
+  margin-bottom: 5px;
+}
+.player-username:hover {
   font-weight: bold;
   margin-bottom: 5px;
 }
-
 /* Exit Button */
 .exit-button {
   margin-top: 20px;
