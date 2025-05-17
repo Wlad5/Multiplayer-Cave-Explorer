@@ -1,0 +1,24 @@
+.exitBtn {
+    background-color: aqua;
+}
+.player {
+    color: red;
+}
+
+.currentPlayer {
+    background-color: yellow;
+    color: red;
+}
+
+.treasure {
+    color: gold;
+}
+
+.trap {
+    color: black;
+    background-color: red;
+}
+
+.obstacle {
+    color: gray;
+}

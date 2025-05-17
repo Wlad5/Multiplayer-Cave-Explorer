@@ -1,0 +1,53 @@
+/* Waiting Room Container */
+.waiting-room {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100vh;
+  padding: 20px;
+  text-align: center;
+}
+
+/* Loader or Message */
+.loader {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #555;
+}
+
+/* Player List */
+.waiting-players {
+  margin-top: 20px;
+  width: 80%;
+  max-width: 400px;
+  text-align: left;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  overflow-y: auto;
+  max-height: 200px;
+  background-color: #f9f9f9;
+}
+
+.player-username {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+/* Exit Button */
+.exit-button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.exit-button:hover {
+  background-color: #ff1a1a;
+}

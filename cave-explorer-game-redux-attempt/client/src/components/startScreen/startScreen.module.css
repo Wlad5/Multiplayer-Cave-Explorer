@@ -1,0 +1,79 @@
+/* General container for the start screen */
+.start-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    height: 100vh;
+    padding: 20px;
+  }
+  
+  /* Username input field at the top center */
+  .username-input {
+    margin-top: 20px;
+    width: 50%;
+    max-width: 300px;
+    padding: 10px;
+    font-size: 16px;
+    text-align: center;
+  }
+  
+  /* Buttons below the username input */
+  .buttons {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .buttons button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  /* Active games list below the buttons */
+  .active-games-list {
+    margin-top: 20px;
+    width: 80%;
+    max-width: 400px;
+    text-align: left;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    overflow-y: auto;
+    max-height: 200px;
+  }
+  
+  /* Waiting room container */
+  .waiting-room {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+  }
+  
+  .waiting-room .loader {
+    margin-bottom: 20px;
+  }
+  
+  .waiting-room .player-list {
+    margin-top: 20px;
+    width: 80%;
+    max-width: 400px;
+    text-align: left;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    overflow-y: auto;
+    max-height: 200px;
+  }
+  
+  .waiting-room .exit-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
