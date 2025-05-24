@@ -1,0 +1,16 @@
+.game-message {
+    display: inline-block;
+    margin: 16px auto;
+    padding: 16px 32px;
+    background: rgba(34, 34, 34, 0.85);
+    color: #ffe066;
+    border: 2px solid #fffbe7;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    font-family: 'Press Start 2P', monospace;
+    text-shadow: 2px 2px 4px #000, 0 0 6px #fff;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    max-width: 80vw;
+    text-align: center;
+    z-index: 100;
+}

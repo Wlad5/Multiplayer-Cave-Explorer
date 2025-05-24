@@ -24,16 +24,16 @@ export class Player {
         const directionMap: Record<string, PlayerDirection> = {
             arrowup     : PlayerDirection.NORTH,
             w           : PlayerDirection.NORTH,
-            "^"         : PlayerDirection.NORTH,
+            '⬆️'        : PlayerDirection.NORTH,
             arrowdown   : PlayerDirection.SOUTH,
             s           : PlayerDirection.SOUTH,
-            v           : PlayerDirection.SOUTH,
+            '⬇️'       : PlayerDirection.SOUTH,
             arrowleft   : PlayerDirection.WEST,
             a           : PlayerDirection.WEST,
-            "<"         : PlayerDirection.WEST,
+            '⬅️'        : PlayerDirection.WEST,
             arrowright  : PlayerDirection.EAST,
             d           : PlayerDirection.EAST,
-            ">"         : PlayerDirection.EAST,
+            '➡️'        : PlayerDirection.EAST,
         };
     
         const normalizedMove = move.toLowerCase();

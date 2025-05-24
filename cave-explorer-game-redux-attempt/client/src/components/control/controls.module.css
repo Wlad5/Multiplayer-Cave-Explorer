@@ -1,0 +1,36 @@
+.arrowGrid {
+    display: grid;
+    grid-template-rows: repeat(2, 1fr) auto;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    justify-items: center;
+    align-items: center;
+}
+
+.arrowBtn {
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.arrowBtn:active {
+    background: #eee;
+}
+
+.forwardBtn {
+    grid-column: 1 / span 3;
+    margin-top: 8px;
+    padding: 8px 16px;
+    font-size: 16px;
+    justify-self: center;
+}

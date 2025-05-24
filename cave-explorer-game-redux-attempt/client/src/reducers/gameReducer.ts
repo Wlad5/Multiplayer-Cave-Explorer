@@ -17,7 +17,9 @@ import {
     SetActiveGamesPayload,
     SET_ACTIVE_GAMES,
     SetWaitingPlayersPayload,
-    SET_WAITING_PLAYERS
+    SET_WAITING_PLAYERS,
+    UPDATE_LEADERBOARD,
+    UpdateLeaderboardPayload
 } from "./gameActions";
 import { Player } from "./playerReducer";
 
@@ -31,7 +33,7 @@ export interface GameState {
     message?            : string;
     currentPlayer       : Player | null;
     playerMoved         : boolean;
-    leaderBoard         : {username: string,playerId: number, score: number}[] | [];
+    leaderBoard         : {username: string, playerId: string, score: number}[] | [];
     activeGames         : string[] | [];
     waitingPlayers      : Map<string, Player>;
     winner              : {username: string, playerId: string, score: number} | null;
@@ -55,13 +57,13 @@ export const initialState: GameState = {
 
 export const gameReducer = (state: GameState = initialState, action: GameActions): GameState => {
     switch(action.type) {
-        case START_GAME: {
+        case START_GAME         : {
             return {
                 ...state,
                 gameStatus: 'in_progress'
             }
         }
-        case EXIT_GAME: {
+        case EXIT_GAME          : {
             if (state.gameTimer && state.turnTimer) {
                 clearInterval(state.gameTimer);
                 clearInterval(state.turnTimer);
@@ -75,7 +77,7 @@ export const gameReducer = (state: GameState = initialState, action: GameActions
                 turnTimeLeft: 0
             }
         }
-        case END_GAME: {
+        case END_GAME           : {
             if (state.gameTimer && state.turnTimer) {
                 clearInterval(state.gameTimer);
                 clearInterval(state.turnTimer);
@@ -106,7 +108,7 @@ export const gameReducer = (state: GameState = initialState, action: GameActions
             }
             return state;
         }
-        case SHOW_MESSAGE: {
+        case SHOW_MESSAGE       : {
             if ('payload' in action) {
                 const {message} = action.payload as ShowMessagePayload;
                 return {
@@ -116,7 +118,7 @@ export const gameReducer = (state: GameState = initialState, action: GameActions
             }
             return state;
         }
-        case SET_CURRENT_PLAYER: {
+        case SET_CURRENT_PLAYER : {
             if ('payload' in action) {
                 const {player} = action.payload as SetCurrentPlayerPayload;
                 return {
@@ -126,7 +128,7 @@ export const gameReducer = (state: GameState = initialState, action: GameActions
             }
             return state;
         }
-        case SET_GAME_TIMER: {
+        case SET_GAME_TIMER     : {
             if ('payload' in action) {
                 const { timerId, time } = action.payload as SetGameTimerPayload;
                 return {
@@ -137,7 +139,7 @@ export const gameReducer = (state: GameState = initialState, action: GameActions
             }
             return state;
         }
-        case SET_TURN_TIMER: {
+        case SET_TURN_TIMER     : {
             if ('payload' in action) {
                 const {turnTimerId, time} = action.payload as SetTurnTimerPayload;
                 return {
@@ -148,7 +150,7 @@ export const gameReducer = (state: GameState = initialState, action: GameActions
             }
             return state;
         }
-        case SET_MOVE_MADE: {
+        case SET_MOVE_MADE      : {
             if ('payload' in action) {
                 const {moveMade} = action.payload as SetMoveMadePayload;
                 return {
@@ -158,7 +160,7 @@ export const gameReducer = (state: GameState = initialState, action: GameActions
             }
             return state;
         }
-        case SET_ACTIVE_GAMES: {
+        case SET_ACTIVE_GAMES   : {
             if ('payload' in action) {
                 const {activeGames} = action.payload as SetActiveGamesPayload;
                 return {
@@ -167,6 +169,17 @@ export const gameReducer = (state: GameState = initialState, action: GameActions
                 }
             }
             return state;
+        }
+        case UPDATE_LEADERBOARD : {
+            if ('payload' in action) {
+                const {leaderboard, winner} = action.payload as UpdateLeaderboardPayload;
+                return {
+                    ...state,
+                    leaderBoard: leaderboard,
+                    winner: winner
+                }
+            }
+            return state;;
         }
         default:
             return state;

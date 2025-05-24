@@ -10,6 +10,7 @@ export const SET_GAME_TIMER         = 'SET_GAME_TIMER';
 export const SET_TURN_TIMER         = 'SET_TURN_TIMER';
 export const SET_MOVE_MADE          = 'SET_MOVE_MADE';
 export const SET_ACTIVE_GAMES       = 'SET_ACTIVE_GAMES';
+export const UPDATE_LEADERBOARD     = 'UPDATE_LEADERBOARD';
 
 export interface ShowMessagePayload {
     message: string;
@@ -41,20 +42,25 @@ export interface SetWaitingPlayersPayload {
     waitingPlayers: Map<string, Player>
 }
 
-export const startGameAC = () => ({
-    type: START_GAME
-})
+export interface UpdateLeaderboardPayload {
+    leaderboard : {username: string, playerId: string, score: number}[];
+    winner      : {username: string, playerId: string, score: number};
+}
 
 export interface EndGamePayload {
-    playersScores: {username: string, playerId: number, score: number}[];
+    playersScores: {username: string, playerId: string, score: number}[];
     winner: {username: string, playerId: string, score: number};
 }
 
-export const exitGameAC = () => ({
+export const startGameAC            = () => ({
+    type: START_GAME
+})
+
+export const exitGameAC             = () => ({
     type: EXIT_GAME
 })
 
-export const endGameAC = (playersScores: {username: string, playerId: number, score: number}[], winner: {username: string, playerId: string, score: number}) => ({
+export const endGameAC              = (playersScores: {username: string, playerId: string, score: number}[], winner: {username: string, playerId: string, score: number}) => ({
     type: END_GAME,
     payload: {
         playersScores,
@@ -62,52 +68,60 @@ export const endGameAC = (playersScores: {username: string, playerId: number, sc
     }
 })
 
-export const showMessageAC = (message: string) => ({
+export const showMessageAC          = (message: string) => ({
     type: SHOW_MESSAGE,
     payload: {
         message
     }
 })
 
-export const setWaitingPlayersAC = (waitingPlayers: Map<string, Player>) => ({
+export const setWaitingPlayersAC    = (waitingPlayers: Map<string, Player>) => ({
     type: SET_WAITING_PLAYERS,
     payload: {
         waitingPlayers
     }
 })
 
-export const setCurrentPlayerAC = (player: Player | null) => ({
+export const setCurrentPlayerAC     = (player: Player | null) => ({
     type: SET_CURRENT_PLAYER,
     payload: {
         player
     }
 })
 
-export const setGameTimerAC = (time: number) => ({
+export const setGameTimerAC         = (time: number) => ({
     type: SET_GAME_TIMER,
     payload: {
         time
     }
 });
 
-export const setTurnTimerAC = (time: number) => ({
+export const setTurnTimerAC         = (time: number) => ({
     type: SET_TURN_TIMER,
     payload: {
         time
     }
 })
 
-export const setMoveMadeAC = (moveMade: boolean) => ({
+export const setMoveMadeAC          = (moveMade: boolean) => ({
     type: SET_MOVE_MADE,
     payload: {
         moveMade
     }
 })
 
-export const setActiveGamesAC = (activeGames: string[]) => ({
+export const setActiveGamesAC       = (activeGames: string[]) => ({
     type: SET_ACTIVE_GAMES,
     payload: {
         activeGames
+    }
+})
+
+export const updateLeaderboardAC    = (leaderboard: {username: string, playerId: string, score: number}[], winner: {username: string, playerId: string, score: number}) => ({
+    type: UPDATE_LEADERBOARD,
+    payload: {
+        leaderboard,
+        winner
     }
 })
 
@@ -121,6 +135,7 @@ export type SetTurnTimer        = ReturnType<typeof setTurnTimerAC>
 export type SetMoveMade         = ReturnType<typeof setMoveMadeAC>
 export type SetCurrentPlayer    = ReturnType<typeof setCurrentPlayerAC>
 export type SetActiveGames      = ReturnType<typeof setActiveGamesAC>
+export type UpdateLeaderboard   = ReturnType<typeof updateLeaderboardAC>
 export type GameActions         = 
     | StartGame
     | ExitGame
@@ -131,4 +146,5 @@ export type GameActions         =
     | SetGameTimer
     | SetTurnTimer
     | SetMoveMade
-    | SetActiveGames;
+    | SetActiveGames
+    | UpdateLeaderboard;

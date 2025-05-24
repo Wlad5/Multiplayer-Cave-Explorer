@@ -15,7 +15,8 @@ import {
 	setTurnTimerAC,
 	setWaitingPlayersAC,
 	showMessageAC,
-	startGameAC
+	startGameAC,
+	updateLeaderboardAC
 } from "./reducers/gameActions";
 import Gameboard from "./components/gameBoard/GameBoard";
 import {
@@ -34,7 +35,6 @@ import { Controls } from "./components/control/Controls";
 const socket = io('http://localhost:3000');
 
 function App() {
-	// const [showLeaderboard, setShowLeaderboard] = useState(false);
 	const dispatch: AppDispatch 	= useDispatch();
 	const [username, setUsername] 	= useState('');
 	const players 					= useSelector((state: RootState) => state.player);
@@ -52,72 +52,76 @@ function App() {
 	const playerTrapImmunity 		= players.get(socket.id!)?.trapImmunity || 0;
 	const currentPlayerUsername 	= currentPlayer?.username 				|| username;
 
-	useEffect(() => {
+	useEffect(					() 																=> {
 
-		socket.on('waitingPlayers', (waitingPlayers) => {
+		socket.on('waitingPlayers', 	(waitingPlayers) 			=> {
 			const playersMap = new Map<string, Player>(waitingPlayers);
 			dispatch(setWaitingPlayersAC(playersMap));
 		});
 
-		socket.on('gameJoined', ({ gameId }) => {
+		socket.on('gameJoined', 		({ gameId }) 				=> {
 			console.log(`Joined game: ${gameId}`);
 			dispatch(startGameAC());
 		})
 
-		socket.on('activeGames', (activeGames: string[]) => {
+		socket.on('activeGames', 		(activeGames) 				=> {
 			dispatch(setActiveGamesAC(activeGames));
 		})
 
-		socket.on('playerAdded', (newPlayer) => {
+		socket.on('playerAdded', 		(newPlayer) 				=> {
 			console.log(`New player added: ${newPlayer}`);
 			dispatch(addPlayerAC(newPlayer));
 		})
 
-		socket.on('playerJoined', (players) => {
+		socket.on('playerJoined', 		(players) 					=> {
 			console.log('Updated players list:', players);
 			players.forEach((player: Player) => {
 				dispatch(addPlayerAC(player));
 			});
 		});
 
-		socket.on('playerUpdated', (updatedPlayer) => {
+		socket.on('playerUpdated', 		(updatedPlayer) 			=> {
 			console.log(`Player updated: ${updatedPlayer}`);
 			dispatch(updateScoreAC(updatedPlayer.id, updatedPlayer.score));
 			dispatch(updateTrapImmunity(updatedPlayer.id, updatedPlayer.trapImmunity));
 		});
 
-		socket.on('currentPlayer', (player) => {
+		socket.on('leaderBoard', 		(leaderBoard, winner) 		=> {
+			dispatch(updateLeaderboardAC(leaderBoard, winner))
+		});
+
+		socket.on('currentPlayer', 		(player) 					=> {
 			dispatch(setCurrentPlayerAC(player));
 		});
 
-		socket.on('gameTimeUpdate', (timeLeft) => {
+		socket.on('gameTimeUpdate', 	(timeLeft) 					=> {
 			dispatch(setGameTimerAC(timeLeft));
 		});
 
-		socket.on('turnTimerUpdate', ({ playerId, timeLeft }) => {
+		socket.on('turnTimerUpdate', 	({ playerId, timeLeft }) 	=> {
 			if (playerId === socket.id) {
 				dispatch(setTurnTimerAC(timeLeft));
 			}
 		});
 
-		socket.on('playerRemoved', (playerId: string) => {
+		socket.on('playerRemoved', 		(playerId) 					=> {
 			dispatch(removePlayerAC(playerId));
 		});
 
-		socket.on('gameState', (updatedGrid) => {
+		socket.on('gameState', 			(updatedGrid) 				=> {
 			dispatch(initializeGridAC(updatedGrid.length, updatedGrid, updatedGrid));
 		});
 
-		socket.on('message', (message) => {
+		socket.on('message', 			(message) 					=> {
 			dispatch(showMessageAC(message));
 		});
 
-		socket.on('gameCreated', ({ gameId }) => {
+		socket.on('gameCreated', 		({ gameId }) 				=> {
 			socket.emit('getCurrentPlayer', { gameId });
 			dispatch(startGameAC());
 		});
 
-		socket.on('gameEnded', (scores, winner) => {
+		socket.on('gameEnded', 			(scores, winner) 			=> {
 			dispatch(endGameAC(scores, winner));
 			dispatch(setWaitingPlayersAC(waitingPlayers));
 		});
@@ -139,13 +143,13 @@ function App() {
 	}, [dispatch, waitingPlayers]);
 
 	
-	useEffect(() => {
+	useEffect(					() 																=> {
 		players.forEach((player: Player) => {
 			console.log(`Player ID: ${player.id}, Score: ${player.score}`);
 		});
 	}, [players])
 
-	useEffect(() => {
+	useEffect(					() 																=> {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			switch (e.key) {
 				case 'ArrowUp':
@@ -168,7 +172,7 @@ function App() {
 		};
 	});
 
-	const handleInput = (action: string) => {
+	const handleInput 		= 	(action: string) 												=> {
 		let serverDirection = action;
 		switch (action) {
 			case PlayerDirection.NORTH: serverDirection = "ArrowUp"; break;
@@ -195,7 +199,7 @@ function App() {
 		}
 	};
 
-	const play = () => {
+	const play 				= 	() 																=> {
 		if (username.trim()) {
 			socket.emit('createGame', { username });
 			dispatch(startGameAC());
@@ -204,7 +208,7 @@ function App() {
 		}
 	}
 
-	const join = () => {
+	const join 				= 	() 																=> {
 		if (username.trim()) {
 			socket.emit('waitingRoom', { username });
 			const playersMap = new Map<string, Player>(waitingPlayers);
@@ -214,7 +218,7 @@ function App() {
 		}
 	}
 
-	const joinActiveGame = (gameId: string) => {
+	const joinActiveGame 	= 	(gameId: string) 												=> {
 		if (username.trim()) {
 			socket.emit('joinActiveGame', { gameId, username });
 			dispatch(startGameAC())
@@ -223,23 +227,23 @@ function App() {
 		}
 	}
 
-	const movePlayer = (playerId: string, move: string) => {
+	const movePlayer 		= 	(playerId: string, move: string) 								=> {
 		dispatch(movePlayerAC(playerId, grid));
 		socket.emit('move', { playerId: playerId, move: move });
 	}
 
-	const turnPlayer = (playerId: string, direction: string, serverDirection: string) => {
+	const turnPlayer 		= 	(playerId: string, direction: string, serverDirection: string) 	=> {
 		dispatch(turnPlayerAC(playerId, direction));
 		socket.emit('turn', { playerId: playerId, direction: serverDirection });
 	}
 	
-	const leaveWaitingRoom = () => {
+	const leaveWaitingRoom 	= 	() 																=> {
 		socket.emit('leaveWaitingRoom', { playerId: socket.id });
 		const playerMap = new Map<string, Player>(waitingPlayers);
 		dispatch(setWaitingPlayersAC(playerMap));
 	}
 
-	const exitGame = () => {
+	const exitGame 			= 	() 																=> {
 		dispatch(exitGameAC());
 		socket.emit('leaveGame', { playerId: socket.id });
 	}
@@ -276,7 +280,6 @@ function App() {
 						<div>{`${playerUsername}: ${playerScore}`}</div>
 						<div>{`Trap Immunity: ${playerTrapImmunity}`}</div>
 					</div>
-					{/* Always show the leaderboard */}
 					<div className="leaderBoard">
 						<h2>Leaderboard</h2>
 						{leaderBoard && leaderBoard.length > 0 ? (

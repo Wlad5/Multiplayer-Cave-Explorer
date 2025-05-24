@@ -42,7 +42,6 @@ export class Game {
                     case result.cellWithAnotherPlayer   : resultMessage = this.handleCellWithAnotherPlayer();   break;
                     case result.isTrapImmunityPowerUp   : resultMessage = this.handleIsTrapImmunityPowerUp();   break;
                 }
-                console.log(prevX, prevY)
                 this.grid.revealLineOfSight(player.getX(), player.getY(), player.getDirection());
                 break;
             }
@@ -73,7 +72,6 @@ export class Game {
         return resultMessage;
     }
     public addPlayer                    (playerId: string, username: string): void      {
-        console.log(`Adding player with ID: ${playerId}`);
         if (this.players.has(playerId)) {
             throw new Error('Player with this ID already exists!');
         }
@@ -97,7 +95,6 @@ export class Game {
             return;
         }
         this.players.set(playerId, player);
-        console.log(this.players);
     }
     public removePlayer                 (playerId: string): void                        {
         const player = this.players.get(playerId);
@@ -122,16 +119,14 @@ export class Game {
         if (player.getTrapImmunity() > 0) {
             player.setTrapImmunity(player.getTrapImmunity() - 1);
             player.subtractScore(0);
-            return`You hit a trap, but you have immunity! You can now move through ${player.getTrapImmunity()} traps.`;
+            return `You hit a trap, but you have immunity! You can now move through ${player.getTrapImmunity()} traps.`;
         } else {
             player.subtractScore(10);
-            console.log(`Player ${player.getId()} has ${player.getScore()} points`);
             return `You hit a trap! -10 points deducted.`;
         }
     }
     public handleFoundTreasure          (player: Player, ): string                      {
         player.addScore(5);
-        console.log(`Player ${player.getId()} has ${player.getScore()} points`);
         return `You found treasure! +5 points added.`;
     }
     public handleHitObstacle            (): string                                      {
